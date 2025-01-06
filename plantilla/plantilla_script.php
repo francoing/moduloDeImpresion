@@ -11,10 +11,22 @@ function renderSecData(data) {
       searching: false,
       ordering: false,
       info: false,
-      language: {
-          url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
-      },
-      destroy: true
+      destroy: true,
+      dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'pdfHtml5',
+                text: 'Exportar PDF',
+                title: `Boletín de ${data.alumno.nombre} ${data.alumno.apellido}`,
+                customize: function(doc) {
+                    doc.content.splice(1, 0, {
+                        text: `Curso: ${data.alumno.curso}° ${data.alumno.division}`,
+                        style: 'subheader'
+                    });
+                    doc.styles.tableHeader.fillColor = '#4CAF50';
+                }
+            }
+        ]
    });
 
    table.clear();
@@ -70,7 +82,22 @@ function renderSecData(data) {
        searching: false,
        ordering: false,
        info: false,
-       destroy: true
+       destroy: true,
+       dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'pdfHtml5',
+                text: 'Exportar PDF',
+                title: `Boletín de ${data.alumno.nombre} ${data.alumno.apellido}`,
+                customize: function(doc) {
+                    doc.content.splice(1, 0, {
+                        text: `Curso: ${data.alumno.curso}° ${data.alumno.division}`,
+                        style: 'subheader'
+                    });
+                    doc.styles.tableHeader.fillColor = '#4CAF50';
+                }
+            }
+        ]
    });
    
    tableAsistencias.clear();
