@@ -41,6 +41,19 @@
          </thead>
          <tbody></tbody>
        </table>
+       <hr>
+        <!-- Tabla de asistencias -->
+        <table id="asistenciasTableSec" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Asistencia</th>
+                    <th>1°C</th>
+                    <th>2°C</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
      </div>
      <div class="modal-footer">
        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>

@@ -3,10 +3,24 @@
 let responseData; 
 // secundario
 function renderSecData(data) {
-    const table = $('#calificacionesTableSec').DataTable();
+
     $('#nombreAlumnoSec').text(`${data.alumno.nombre} ${data.alumno.apellido}`);
     $('#cursoAlumnoSec').text(`${data.alumno.curso}° ${data.alumno.division}`);
+
+    //calificaciones
     
+    var table = $('#calificacionesTableSec').DataTable({
+       paging: true,
+       searching: false,
+       ordering: false,
+       info: false,
+       language: {
+           url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+       },
+       destroy: true
+   });
+
+
     table.clear();
     data.materias.nombre_materia_primaria.forEach((materia, index) => {
         const materiaId = data.materias.materia_id[index];
@@ -25,7 +39,31 @@ function renderSecData(data) {
         ];
         table.row.add(row);
     });
-    
+
+    //asistencia
+
+    var tableAsistencias = $('#asistenciasTableSec').DataTable({
+        paging: false,
+        searching: false,
+        ordering: false,
+        info: false,
+        destroy: true
+    });
+    tableAsistencias.clear();
+    const asistenciasData = [
+        ['Asistencia', data.asistencias.preTR1, data.asistencias.preTR2, data.asistencias.pretot],
+        ['Inasist. Just.', data.asistencias.jusTR1, data.asistencias.jusTR2, data.asistencias.justot || 0],
+        ['Inasist. Injust.', data.asistencias.injusTR1, data.asistencias.injusTR2, data.asistencias.injustot],
+        ['Llegadas tarde', 
+            data.asistencias.LTITR1 + data.asistencias.LTJTR1,
+            data.asistencias.LTITR2 + data.asistencias.LTJTR2,
+            data.asistencias.LTI + data.asistencias.LTJ
+        ]
+    ];
+   
+    asistenciasData.forEach(row => tableAsistencias.row.add(row));
+
+    tableAsistencias.draw();
     table.draw();
     $('#exampleModalSec').modal('show');
 }
