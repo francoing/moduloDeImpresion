@@ -3,69 +3,93 @@
 let responseData; 
 // secundario
 function renderSecData(data) {
+   $('#nombreAlumnoSec').text(`${data.alumno.nombre} ${data.alumno.apellido}`);
+   $('#cursoAlumnoSec').text(`${data.alumno.curso}° ${data.alumno.division}`);
 
-    $('#nombreAlumnoSec').text(`${data.alumno.nombre} ${data.alumno.apellido}`);
-    $('#cursoAlumnoSec').text(`${data.alumno.curso}° ${data.alumno.division}`);
+   var table = $('#calificacionesTableSec').DataTable({
+      paging: true,
+      searching: false,
+      ordering: false,
+      info: false,
+      language: {
+          url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+      },
+      destroy: true
+   });
 
-    //calificaciones
-    
-    var table = $('#calificacionesTableSec').DataTable({
-       paging: true,
+   table.clear();
+   data.materias.nombre_materia_primaria.forEach((materia, index) => {
+       const materiaId = data.materias.materia_id[index];
+       const tr1 = parseFloat(data.calificaciones.TR1?.[materiaId]) || 0;
+       const tr2 = parseFloat(data.calificaciones.TR2?.[materiaId]) || 0;
+       const tr3 = parseFloat(data.calificaciones.TR3?.[materiaId]) || 0;
+       
+       // Calcular promedio si hay notas
+       let promedio = '-';
+       if (tr1 || tr2 || tr3) {
+           const suma = tr1 + tr2 + tr3;
+           const cantidad = (tr1 ? 1 : 0) + (tr2 ? 1 : 0) + (tr3 ? 1 : 0);
+           promedio = (suma / cantidad).toFixed(2);
+       }
+
+       // Determinar C.D
+       const dic = parseFloat(data.calificaciones.DIC?.[materiaId]) || 0;
+       const feb = parseFloat(data.calificaciones.FEB?.[materiaId]) || 0;
+       let cd = '-';
+       
+       if (promedio !== '-' && parseFloat(promedio) >= 6) {
+           cd = promedio;
+       } else if (dic >= 6) {
+           cd = dic;
+       } else if (feb >= 6) {
+           cd = feb;
+       }
+
+       let row = [
+           materia,
+           data.calificaciones.TR1?.[materiaId] || '-',
+           data.calificaciones.IC1?.[materiaId] || '-',
+           data.calificaciones.N41?.[materiaId] || '-',
+           data.calificaciones.TR2?.[materiaId] || '-',
+           data.calificaciones.IC2?.[materiaId] || '-',
+           data.calificaciones.N42?.[materiaId] || '-',
+           data.calificaciones.TR3?.[materiaId] || '-',
+           data.calificaciones.IC3?.[materiaId] || '-',
+           data.calificaciones.N43?.[materiaId] || '-',
+           promedio,
+           data.calificaciones.DIC?.[materiaId] || '-',
+           data.calificaciones.FEB?.[materiaId] || '-',
+           cd
+       ];
+       table.row.add(row);
+   });
+
+   // Código de asistencias sin cambios
+   var tableAsistencias = $('#asistenciasTableSec').DataTable({
+       paging: false,
        searching: false,
        ordering: false,
        info: false,
-       language: {
-           url: "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
-       },
        destroy: true
    });
-
-
-    table.clear();
-    data.materias.nombre_materia_primaria.forEach((materia, index) => {
-        const materiaId = data.materias.materia_id[index];
-        let row = [
-            materia,
-            data.calificaciones.TR1?.[materiaId] || '-',
-            data.calificaciones.IC1?.[materiaId] || '-',
-            data.calificaciones.N41?.[materiaId] || '-',
-            data.calificaciones.TR2?.[materiaId] || '-',
-            data.calificaciones.IC2?.[materiaId] || '-',
-            data.calificaciones.N42?.[materiaId] || '-',
-            data.calificaciones.TR3?.[materiaId] || '-',
-            data.calificaciones.IC3?.[materiaId] || '-',
-            data.calificaciones.N43?.[materiaId] || '-',
-            '-', '-', '-', '-'
-        ];
-        table.row.add(row);
-    });
-
-    //asistencia
-
-    var tableAsistencias = $('#asistenciasTableSec').DataTable({
-        paging: false,
-        searching: false,
-        ordering: false,
-        info: false,
-        destroy: true
-    });
-    tableAsistencias.clear();
-    const asistenciasData = [
-        ['Asistencia', data.asistencias.preTR1, data.asistencias.preTR2, data.asistencias.pretot],
-        ['Inasist. Just.', data.asistencias.jusTR1, data.asistencias.jusTR2, data.asistencias.justot || 0],
-        ['Inasist. Injust.', data.asistencias.injusTR1, data.asistencias.injusTR2, data.asistencias.injustot],
-        ['Llegadas tarde', 
-            data.asistencias.LTITR1 + data.asistencias.LTJTR1,
-            data.asistencias.LTITR2 + data.asistencias.LTJTR2,
-            data.asistencias.LTI + data.asistencias.LTJ
-        ]
-    ];
    
-    asistenciasData.forEach(row => tableAsistencias.row.add(row));
+   tableAsistencias.clear();
+   const asistenciasData = [
+       ['Asistencia', data.asistencias.preTR1, data.asistencias.preTR2, data.asistencias.pretot],
+       ['Inasist. Just.', data.asistencias.jusTR1, data.asistencias.jusTR2, data.asistencias.justot || 0],
+       ['Inasist. Injust.', data.asistencias.injusTR1, data.asistencias.injusTR2, data.asistencias.injustot],
+       ['Llegadas tarde', 
+           data.asistencias.LTITR1 + data.asistencias.LTJTR1,
+           data.asistencias.LTITR2 + data.asistencias.LTJTR2,
+           data.asistencias.LTI + data.asistencias.LTJ
+       ]
+   ];
+  
+   asistenciasData.forEach(row => tableAsistencias.row.add(row));
 
-    tableAsistencias.draw();
-    table.draw();
-    $('#exampleModalSec').modal('show');
+   tableAsistencias.draw();
+   table.draw();
+   $('#exampleModalSec').modal('show');
 }
 //inicial
 function renderIniData(data) {
