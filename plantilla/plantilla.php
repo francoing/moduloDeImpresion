@@ -45,9 +45,9 @@
                                     <button type="button" class="btn btn-primary" id="btn-modal" data-toggle="modal"  disabled>
                                         Ver reporte via html
                                     </button>
-                                    <button class="btn btn-primary" id="btn-pdf" disabled>
+                                    <a href="/ModuloImpresionPdf/plantilla/pdf/pdf_sec.php" class="btn btn-primary" id="btn-pdf" target="_blank">
                                         Generar Reporte Via pdf
-                                    </button>
+                                    </a>
                                     
                                 </div>
                             </div>
