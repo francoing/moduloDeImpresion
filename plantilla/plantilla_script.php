@@ -191,7 +191,7 @@ $(document).ready(function() {
        };
        
        $.ajax({
-           url: 'http://localhost/csc-back/api/padres/get_informe_anual_optimizado.php',
+           url: 'http://localhost/csc-back/api/padron/get_informe_anual_optimizado.php',
            type: "POST",
            dataType: "json",
            data: formData,
