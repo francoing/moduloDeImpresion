@@ -10,7 +10,7 @@
                         <a class="nav-link" data-content="second-tab" href="#">Segundo</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link disabled">Disabled</a>
+                        <a class="nav-link" data-content="tercer-tab" href="#">Tercero</a>
                     </li>
                 </ul>
             </div>
@@ -62,6 +62,10 @@
                         <div id="second-tab" class="tab-pane">
                             <!-- Contenido de padrones.php -->
                             <?php include "plantilla/padron/padrones.php"; ?>
+                        </div>
+                        <div id="tercer-tab" class="tab-pane">
+                            <!-- Contenido de padrones.php -->
+                            <?php include "plantilla/asistencia/asistencia.php"; ?>
                         </div>
             </div>
             
