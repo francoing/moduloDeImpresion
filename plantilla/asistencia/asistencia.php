@@ -65,9 +65,12 @@
     <div class="menu-item" data-action="ReI">[ReI] Receso de Invierno</div>
     <div class="menu-item" data-action="Ef">[Ef] Exámenes Finales</div>
     <div class="menu-item" data-action="JdE">[JdE] Jornada de Estudio</div>
-    <div class="menu-item" data-action="P">[P] Presente Global</div>
+    <div class="menu-item" data-action="PG">[P] Presente Global</div>
 </div>
 
+<div id="contextMenuDia" class="context-menu" style="display: none;">
+    
+</div>
 
 <style>
 .column-hover {
@@ -86,6 +89,14 @@
     border-radius: 4px;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     padding: 5px 0;
+    max-height: 80vh; /* límite de altura */
+    overflow-y: auto; /* scroll si es necesario */
+}
+
+.cell-highlight {
+    position: relative;
+    z-index: 999;
+    outline: 2px solid #007bff;
 }
 
 .menu-item {
