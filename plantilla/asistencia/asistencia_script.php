@@ -40,43 +40,26 @@ $(document).ready(function() {
        });
    }
 
-   // Manejador de cambio para el ciclo
-   $('#ciclo_padron_alum').change(function() {
-       let ciclo = $(this).val();
-       let formData = {
-           ciclo: ciclo,
-           api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0='
-       };
-
-       let html = '<option value="">Seleccione Curso</option>';
-       $.ajax({
-           url: 'http://localhost/csc-back/api/padrones/get_cursos.php',
-           type: "POST",
-           dataType: "json",
-           data: formData,
-           success: function(response) {
-               if (response.status === 'success') {
-                   response.curso.forEach((curso, index) => {
-                       html += `<option value="${curso}-${response.division[index]}">${curso}-${response.division[index]}</option>`;
-                   });
-                   $('#curso_padron_alum').html(html);
-               }
-           }
-       });
-   });
-
    // Funciones para generar la tabla
-   function generateDaysHeader(diasClase) {
-       let headers = `<th rowspan="2" class="align-middle">Nombre</th>`;
-       diasClase.forEach(dia => {
-           headers += `<th>${String(dia).padStart(2, '0')}</th>`;
-       });
-       headers += `
-           <th rowspan="2">Jus</th>
-           <th rowspan="2">Inj</th>
-           <th rowspan="2">Tot</th>
-       `;
-       return headers;
+   function generateDaysHeader(dias_mes, diasClase) {
+        let headers = `<th rowspan="2" class="align-middle">Nombre</th>`;
+        
+        // Generar columnas para todos los días del mes
+        for(let i = 1; i <= dias_mes; i++) {
+            const diaFormateado = String(i).padStart(2, '0');
+            // Verificar si este día está en diasClase
+            const esDiaClase = diasClase.includes(i);
+            // Si es día de clase, mostrar el número, si no, mostrar FdS o dejarlo vacío
+            headers += `<th>${diaFormateado}</th>`;
+        }
+
+        headers += `
+            <th rowspan="2">Jus</th>
+            <th rowspan="2">Inj</th>
+            <th rowspan="2">Tot</th>
+        `;
+        
+        return headers;
    }
 
    function generateTableHTML(response) {
@@ -95,7 +78,7 @@ $(document).ready(function() {
                <table class="table table-bordered table-sm attendance-table">
                    <thead>
                        <tr>
-                           ${generateDaysHeader(response.data.dias_clase)}
+                           ${generateDaysHeader(response.data.dias_mes,response.data.dias_clase)}
                        </tr>
                    </thead>
                    <tbody>
@@ -159,6 +142,39 @@ $(document).ready(function() {
        });
    }
 
+   function actualizarEstadoDia(dia, estado) {
+
+        // const formData = {
+        //     dia: dia,
+        //     estado: estado,
+        //     mes: $('#mes').val(),
+        //     anio: $('#anio_alum').val(),
+        //     ciclo: $('#ciclo_padron_alum').val(),
+        //     curso: $('#curso_padron_alum').val().split('-')[0],
+        //     division: $('#curso_padron_alum').val().split('-')[1],
+        //     api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0='
+        // };
+
+        // $.ajax({
+        //     url: 'http://localhost/csc-back/api/asistencia/actualizar_estado_dia.php',
+        //     type: 'POST',
+        //     dataType: 'json',
+        //     data: formData,
+        //     success: function(response) {
+        //         if(response.status === 'success') {
+        //             // Recargar la tabla
+        //             loadStudents(formData);
+        //         } else {
+        //             Swal.fire({
+        //                 title: '¡Error!',
+        //                 text: response.message,
+        //                 icon: 'error'
+        //             });
+        //         }
+        //     }
+        // });
+    }
+
    // Manejador de eventos para los cambios en los selects
    $('#turno').change(function() {
        const ciclo = $('#ciclo_padron_alum').val();
@@ -183,5 +199,131 @@ $(document).ready(function() {
        
        loadStudents(formData);
    });
+
+   $('#ciclo_padron_alum').change(function() {
+       let ciclo = $(this).val();
+       let formData = {
+           ciclo: ciclo,
+           api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0='
+       };
+
+       let html = '<option value="">Seleccione Curso</option>';
+       $.ajax({
+           url: 'http://localhost/csc-back/api/padrones/get_cursos.php',
+           type: "POST",
+           dataType: "json",
+           data: formData,
+           success: function(response) {
+               if (response.status === 'success') {
+                   response.curso.forEach((curso, index) => {
+                       html += `<option value="${curso}-${response.division[index]}">${curso}-${response.division[index]}</option>`;
+                   });
+                   $('#curso_padron_alum').html(html);
+               }
+           }
+       });
+   });
+
+   $(document).on('contextmenu', '.attendance-table th', function(e) {
+        e.preventDefault();
+        
+        if($(this).text().match(/^\d{2}$/)) {
+            const columnIndex = $(this).index();
+            
+            // Remover hover previo
+            $('.column-hover').removeClass('column-hover');
+            
+            // Aplicar hover usando eq()
+            $('.attendance-table td').each(function() {
+                if($(this).index() === columnIndex) {
+                    $(this).addClass('column-hover');
+                }
+            });
+            $('.attendance-table th').eq(columnIndex).addClass('column-hover');
+            
+            const contextMenu = $('#contextMenu');
+            contextMenu.data('selectedDay', $(this).text());
+            contextMenu.data('columnIndex', columnIndex);
+            
+            contextMenu.css({
+                top: e.pageY + 'px',
+                left: e.pageX + 'px',
+                display: 'block'
+            });
+        }
+    });
+
+    $(document).click(function() {
+        $('#contextMenu').hide();
+        $('.column-hover').removeClass('column-hover');
+    });
+
+    // Manejar click en opciones del menú
+    $('.menu-item').click(function(e) {
+        e.stopPropagation();
+        const action = $(this).data('action');
+        const selectedDay = $('#contextMenu').data('selectedDay');
+        const columnIndex = $('#contextMenu').data('columnIndex');
+        // Aquí puedes manejar la acción seleccionada
+        console.log(`Acción ${action} para el día ${selectedDay}`);
+        // Actualizar todas las celdas de la columna según el estado
+        $('.attendance-table tbody tr').each(function() {
+            const cells = $(this).find('td');
+            const cell = cells.eq(columnIndex);
+            
+            switch(action) {
+                case 'Cla':
+                    cell.text('').css('background-color', 'white');
+                    break;
+                case 'Fds':
+                    cell.text('FdS').css('background-color', '#f0f0f0');
+                    break;
+                case 'FeN':
+                    cell.text('FeN').css('background-color', '#ffcdd2');
+                    break;
+                case 'FeP':
+                    cell.text('FeP').css('background-color', '#ffecb3');
+                    break;
+                case 'AsN':
+                    cell.text('AsN').css('background-color', '#c8e6c9');
+                    break;
+                case 'AsP':
+                    cell.text('AsP').css('background-color', '#b3e5fc');
+                    break;
+                case 'AsE':
+                    cell.text('AsE').css('background-color', '#e1bee7');
+                    break;
+                case 'RaI':
+                    cell.text('RaI').css('background-color', '#d7ccc8');
+                    break;
+                case 'PaN':
+                    cell.text('PaN').css('background-color', '#ffccbc');
+                    break;
+                case 'PaP':
+                    cell.text('PaP').css('background-color', '#cfd8dc');
+                    break;
+                case 'ReV':
+                    cell.text('ReV').css('background-color', '#b2dfdb');
+                    break;
+                case 'ReI':
+                    cell.text('ReI').css('background-color', '#f0f4c3');
+                    break;
+                case 'Ef':
+                    cell.text('Ef').css('background-color', '#bbdefb');
+                    break;
+                case 'JdE':
+                    cell.text('JdE').css('background-color', '#d1c4e9');
+                    break;
+                case 'P':
+                    cell.text('P').css('background-color', '#c5e1a5');
+                    break;
+            }
+        });
+        
+        // Remover hover y ocultar menú
+        $('.column-hover').removeClass('column-hover');
+        $('#contextMenu').hide();
+    });
+
 });
 </script>
