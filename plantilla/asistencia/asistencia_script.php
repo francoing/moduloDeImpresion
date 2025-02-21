@@ -7,15 +7,23 @@ $(document).ready(function() {
     cargarOpcionesMenu();
 
     function generarAnios() {
-        const anioActual = new Date().getFullYear();
-        const select = document.getElementById('anio_alum');
-        
-        // Genera opciones desde el año actual hasta 4 años atrás
-        for(let i = 0; i <= 4; i++) {
-            const anio = anioActual - i;
-            const option = new Option(anio, anio);
-            select.add(option);
-        }
+        $.ajax({
+            url: 'http://localhost/csc-back/api/asistencia/get_anios.php',
+            type: "POST",
+            dataType: "json",
+            data: { 
+                api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0='
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    const select = document.getElementById('anio_alum');
+                    response.opciones.forEach(opcion => {
+                        const option = new Option(opcion.anio, opcion.anio);
+                        select.add(option);
+                    });
+                }
+            }
+        });
     }
 
     function generarMeses() {

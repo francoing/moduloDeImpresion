@@ -37,7 +37,7 @@
                     </select>
                 </div>
                 <div class="col">
-                    <button class="btn btn-primary">Imprimir Planilla</button>
+                    <button class="btn btn-primary" disabled>Guardar Planilla</button>
                 </div>
             </div>
         </div>
