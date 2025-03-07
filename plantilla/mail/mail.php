@@ -25,8 +25,8 @@ use League\OAuth2\Client\Grant\RefreshToken;
  */
 function enviarCorreoGmail($destinatario, $asunto, $cuerpo, $adjuntos = [], $cc = null) {
     // Configuración de credenciales OAuth2
-    $clientId = '331083804735-fos1vnkf5epa27ei36fpb5t7soj9k66n.apps.googleusercontent.com';
-    $clientSecret = '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';
+    $clientId = '';
+    $clientSecret = '';
     $email = 'franco.montti.19@gmail.com';
     
     // Ruta al archivo de token de actualización
