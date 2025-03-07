@@ -13,8 +13,8 @@ use League\OAuth2\Client\Provider\Google;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
 // Configuración
-$clientId = '331083804735-fos1vnkf5epa27ei36fpb5t7soj9k66n.apps.googleusercontent.com';
-$clientSecret = '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';
+$clientId = '';
+$clientSecret = '';
 $redirectUri = 'http://localhost/ModuloImpresionPdf/vendor/phpmailer/phpmailer/get_oauth_token.php';
 
 $provider = new Google([
