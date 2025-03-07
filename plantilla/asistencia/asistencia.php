@@ -31,13 +31,13 @@
                 <div class="col">
                     <select class="form-control" id="turno">
                         <option value="">Seleccione un Turno</option>
-                        <option value="contra_turno">Contra Turno</option>
-                        <option value="turno">Turno</option>
+                        <option value="CT">Contra Turno</option>
+                        <option value="T">Turno</option>
                         <!-- Más opciones -->
                     </select>
                 </div>
                 <div class="col">
-                    <button class="btn btn-primary" disabled>Guardar Planilla</button>
+                    <button class="btn btn-primary" id="guardar_planilla">Guardar Planilla</button>
                 </div>
             </div>
         </div>

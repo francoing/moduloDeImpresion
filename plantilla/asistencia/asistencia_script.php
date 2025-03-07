@@ -119,7 +119,7 @@ $(document).ready(function() {
 
             return `
                 <tr>
-                    <td class="nombre-column">${alumno.apellidos}, ${alumno.nombres}</td>
+                    <td class="nombre-column" data-legajo="${alumno.legajo}">${alumno.apellidos}, ${alumno.nombres}</td>
                     ${asistencias}
                     <td class="text-center">${alumno.totales.justificadas}</td>
                     <td class="text-center">${alumno.totales.injustificadas}</td>
@@ -212,6 +212,7 @@ $(document).ready(function() {
         const curso_padron = $('#curso_padron_alum').val();
         const mes = $('#mes').val();
         const anio = $('#anio_alum').val();
+        const turno = $(this).val()
 
         if (!ciclo || !curso_padron || !mes || !anio) {
             return;
@@ -225,6 +226,7 @@ $(document).ready(function() {
             division: division,
             mes: mes,
             anio: anio,
+            turno:turno,
             api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0='
         };
         
@@ -440,6 +442,116 @@ $(document).ready(function() {
         $('.column-hover').removeClass('column-hover');
         $('#contextMenu').hide();
     });
+
+    $('#guardar_planilla').on('click', function() {
+        guardarPlanillaMensual();
+    });
+
+    function guardarPlanillaMensual() {
+    // Obtener información básica
+    const ciclo = $('#ciclo_padron_alum').val();
+    const curso_division = $('#curso_padron_alum').val();
+    const mes = $('#mes').val();
+    const anio = $('#anio_alum').val();
+    const turno = $('#turno').val();
+    
+    if (!ciclo || !curso_division || !mes || !anio || !turno) {
+        Swal.fire({
+            title: '¡Atención!',
+            text: 'Por favor, complete todos los campos antes de guardar la planilla.',
+            icon: 'warning'
+        });
+        return;
+    }
+    
+    const [curso, division] = curso_division.split('-');
+    
+    // Recolectar todos los datos de asistencia
+    const asistenciaMensual = [];
+    
+    $('.attendance-table tbody tr').each(function() {
+        const alumno = $(this).find('td:first').text().trim();
+        const legajo = $(this).find('td:first').data('legajo'); // Asumiendo que tienes el legajo como data-attribute
+        
+        const asistencias = {};
+        // Recorrer todas las celdas de asistencia (excluyendo la primera columna y las últimas 3)
+        $(this).find('td:not(:first-child):not(:last-child):not(:nth-last-child(2)):not(:nth-last-child(3))').each(function(index) {
+            const dia = index + 1;
+            const valor = $(this).text().trim();
+            if (valor !== 'FdS' && valor !== '') {
+                asistencias[dia] = valor;
+            }
+        });
+        
+        asistenciaMensual.push({
+            dni: legajo,
+            nombre: alumno,
+            asistencias: asistencias
+        });
+    });
+
+    // console.log('Datos de asistencia mensual:');
+    // console.log(JSON.stringify(asistenciaMensual, null, 2));
+
+    // // // También puedes imprimir un resumen más compacto
+    // console.log('Resumen de asistencias:');
+    // asistenciaMensual.forEach(alumno => {
+    //     const cantidadAsistencias = Object.keys(alumno.asistencias).length;
+    //     console.log(`${alumno.nombre}: ${cantidadAsistencias} asistencias registradas`);
+    // });
+    
+    // Preparar datos para enviar
+    const formData = {
+        ciclo: ciclo,
+        curso: curso,
+        division: division,
+        mes: mes,
+        anio: anio,
+        turno: turno,
+        datos: asistenciaMensual,
+        api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0='
+    };
+    
+    // Enviar datos al nuevo endpoint
+    $.ajax({
+        url: 'http://localhost/csc-back/api/asistencia/guardar_planilla_mensual.php',
+        type: 'POST',
+        dataType: 'json',
+        data: formData,
+        beforeSend: function() {
+            Swal.fire({
+                title: 'Procesando...',
+                text: 'Guardando asistencias mensuales',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: response.mje_alert,
+                    icon: 'success'
+                });
+            } else {
+                Swal.fire({
+                    title: '¡Error!',
+                    text: response.mje_alert,
+                    icon: 'error'
+                });
+            }
+        },
+        error: function() {
+            Swal.fire({
+                title: '¡Error!',
+                text: 'Ocurrió un error en la comunicación con el servidor.',
+                icon: 'error'
+            });
+        }
+    });
+}
 
 });
 </script>
