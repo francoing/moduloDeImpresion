@@ -493,12 +493,12 @@ $(document).ready(function() {
     // console.log('Datos de asistencia mensual:');
     // console.log(JSON.stringify(asistenciaMensual, null, 2));
 
-    // // // También puedes imprimir un resumen más compacto
-    // console.log('Resumen de asistencias:');
-    // asistenciaMensual.forEach(alumno => {
-    //     const cantidadAsistencias = Object.keys(alumno.asistencias).length;
-    //     console.log(`${alumno.nombre}: ${cantidadAsistencias} asistencias registradas`);
-    // });
+    // // También puedes imprimir un resumen más compacto
+    console.log('Resumen de asistencias:');
+    asistenciaMensual.forEach(alumno => {
+        const cantidadAsistencias = Object.keys(alumno.asistencias).length;
+        console.log(`${alumno.nombre}: ${cantidadAsistencias} asistencias registradas`);
+    });
     
     // Preparar datos para enviar
     const formData = {
