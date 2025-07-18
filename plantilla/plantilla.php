@@ -4,7 +4,7 @@
             <div class="card-header">
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" data-content="first-tab" href="#">Primero</a>
+                        <a class="nav-link " data-content="first-tab" href="#">Primero</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-content="second-tab" href="#">Segundo</a>
@@ -12,10 +12,13 @@
                     <li class="nav-item">
                         <a class="nav-link" data-content="tercer-tab" href="#">Tercero</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" data-content="curricula-tab" href="#">Curricula</a>
+                    </li>
                 </ul>
             </div>
             <div class="tab-content">
-                <div id="first-tab" class="tab-pane active">
+                <div id="first-tab" class="tab-pane ">
                             <!-- Contenido actual -->
                             <div class="card-body">
                                 <h5 class="card-title">Reportes</h5>
@@ -66,6 +69,10 @@
                         <div id="tercer-tab" class="tab-pane">
                             <!-- Contenido de padrones.php -->
                             <?php include "plantilla/asistencia/asistencia.php"; ?>
+                        </div>
+                         <div id="curricula-tab" class="tab-pane active">
+                            <!-- Contenido de padrones.php -->
+                            <?php include "plantilla/curricula/curricula.php"; ?>
                         </div>
             </div>
             
