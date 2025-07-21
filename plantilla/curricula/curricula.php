@@ -21,20 +21,6 @@
 					<!-- Post Container -->
 						<div id="880" class="clearfix post-880 page type-page status-publish hentry">
 							
-							<!-- Título de la página -->
-							<div class="page-title-section">
-								<div class="container">
-									<h1 class="page-title">
-										<i class="fas fa-graduation-cap"></i>
-										Sistema de Gestión de Currícula
-									</h1>
-									<p class="page-description">
-										Administra y consulta la información académica de cursos, materias, docentes y horarios
-									</p>
-								</div>
-							</div>
-							
-							<hr>
 							
 							<!-- Contenedor principal del sistema -->
 							<div class="container">
@@ -42,7 +28,7 @@
 									
 									<!-- Loader inicial -->
 									<div class='loader loader--audioWave'>
-										<p>CARGANDO SISTEMA DE CURRÍCULA</p>
+										<p>CARGANDO SISTEMA</p>
 									</div>
 									
 									<!-- Aquí se carga dinámicamente el contenido del sistema de currícula -->

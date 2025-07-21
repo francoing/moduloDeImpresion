@@ -1,14 +1,16 @@
 <script>
-// Sistema de Gestión de Currícula - Funciones JavaScript
+// Sistema de Gestión de Currícula - Funciones JavaScript Actualizado (Sin Selects)
 $(document).ready(function() {
     
     // Configuración global del sistema
     window.CurriculaSystem = {
         selectedMateria: null,
         currentData: null,
-        apiEndpoint: 'http://localhost/csc-back/api/curricula/get_curricula_data.php', // Ajusta según tu estructura
-        api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0=', // Coma agregada aquí
-        añosData: null, // Para almacenar los datos de años
+        selectedAño: null,
+        apiEndpoint: 'http://localhost/csc-back/api/curricula/get_curricula_data.php',
+        api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0=',
+        añosData: null,
+        curriculaData: null,
         
         // Inicialización del sistema
         init: function() {
@@ -24,46 +26,42 @@ $(document).ready(function() {
                     <div class="curricula-header">
                         <h2>
                             <i class="fas fa-chart-bar"></i>
-                            Sistema de Gestión de Currícula
+                            Sistema de Gestión
                         </h2>
                     </div>
 
-                    <!-- Panel de Control -->
-                    <div class="control-panel">
-                        <div class="control-group">
-                            <div class="control-item">
-                                <label for="select-año">Año Académico</label>
-                                <select id="select-año" class="form-control">
-                                    <option value="">Seleccionar año...</option>
-                                </select>
+                    <!-- Panel de Resumen (donde estaban los selects) -->
+                    <div id="resumen-panel" class="info-panel" style="display: none;">
+                        <h3 style="margin-top: 0; color: #495057;">
+                            <i class="fas fa-chart-pie"></i>
+                            Resumen de la Currícula
+                        </h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Año Seleccionado</div>
+                                <div class="info-value" id="año-seleccionado">-</div>
                             </div>
-                            
-                            <div class="control-item">
-                                <label for="select-nivel">Nivel</label>
-                                <select id="select-nivel" class="form-control" disabled>
-                                    <option value="">Seleccionar nivel...</option>
-                                </select>
+                            <div class="info-item">
+                                <div class="info-label">Total de Materias</div>
+                                <div class="info-value" id="total-materias">-</div>
                             </div>
-                            
-                            <div class="control-item">
-                                <label for="select-curso">Curso</label>
-                                <select id="select-curso" class="form-control" disabled>
-                                    <option value="">Seleccionar curso...</option>
-                                </select>
+                            <div class="info-item">
+                                <div class="info-label">Total de Cursos</div>
+                                <div class="info-value" id="total-cursos">-</div>
                             </div>
-                            
-                            <div class="control-item">
-                                <label for="select-division">División</label>
-                                <select id="select-division" class="form-control" disabled>
-                                    <option value="">Seleccionar división...</option>
-                                </select>
+                            <div class="info-item">
+                                <div class="info-label">Total de Divisiones</div>
+                                <div class="info-value" id="total-divisiones">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Docentes Asignados</div>
+                                <div class="info-value" id="total-docentes">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Preceptores</div>
+                                <div class="info-value" id="total-preceptores">-</div>
                             </div>
                         </div>
-                        
-                        <button id="btn-consultar" class="btn-consultar" disabled>
-                            <i class="fas fa-search"></i>
-                            Consultar Currícula
-                        </button>
                     </div>
 
                     <!-- Grid de Tablas -->
@@ -73,7 +71,7 @@ $(document).ready(function() {
                         <div class="table-section">
                             <div class="table-header">
                                 <i class="fas fa-calendar"></i>
-                                Años Académicos Disponibles
+                                Años Disponibles
                             </div>
                             <div class="table-container">
                                 <div id="años-content" class="empty-state">
@@ -83,16 +81,44 @@ $(document).ready(function() {
                             </div>
                         </div>
 
+                        <!-- Tabla de Cursos -->
+                        <div class="table-section">
+                            <div class="table-header">
+                                <i class="fas fa-graduation-cap"></i>
+                                Cursos Disponibles
+                            </div>
+                            <div class="table-container">
+                                <div id="cursos-content" class="empty-state">
+                                    <i class="fas fa-graduation-cap fa-3x"></i>
+                                    <p>Selecciona un año para ver los cursos</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Divisiones -->
+                        <div class="table-section">
+                            <div class="table-header">
+                                <i class="fas fa-users"></i>
+                                Divisiones Disponibles
+                            </div>
+                            <div class="table-container">
+                                <div id="divisiones-content" class="empty-state">
+                                    <i class="fas fa-users fa-3x"></i>
+                                    <p>Selecciona un curso para ver las divisiones</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Tabla de Materias -->
                         <div class="table-section">
                             <div class="table-header">
                                 <i class="fas fa-book"></i>
-                                Materias del Curso
+                                Materias por División
                             </div>
                             <div class="table-container">
                                 <div id="materias-content" class="empty-state">
                                     <i class="fas fa-book-open fa-3x"></i>
-                                    <p>Selecciona un curso para ver las materias</p>
+                                    <p>Selecciona una división para ver las materias</p>
                                 </div>
                             </div>
                         </div>
@@ -101,67 +127,27 @@ $(document).ready(function() {
                         <div class="table-section">
                             <div class="table-header">
                                 <i class="fas fa-chalkboard-teacher"></i>
-                                Docentes Asignados
+                                Docentes
                             </div>
                             <div class="table-container">
                                 <div id="docentes-content" class="empty-state">
                                     <i class="fas fa-user-tie fa-3x"></i>
-                                    <p>Selecciona una materia para ver los docentes</p>
+                                    <p>Información de docentes disponible</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Tabla de Horarios -->
+                        <!-- Tabla de Preceptores -->
                         <div class="table-section">
                             <div class="table-header">
-                                <i class="fas fa-clock"></i>
-                                Horarios de Clases
+                                <i class="fas fa-user-graduate"></i>
+                                Preceptores
                             </div>
                             <div class="table-container">
-                                <div id="horarios-content" class="empty-state">
-                                    <i class="fas fa-calendar-alt fa-3x"></i>
-                                    <p>Selecciona una materia para ver los horarios</p>
+                                <div id="preceptores-content" class="empty-state">
+                                    <i class="fas fa-user-graduate fa-3x"></i>
+                                    <p>Información de preceptores disponible</p>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Tabla de Información Adicional -->
-                        <div class="table-section">
-                            <div class="table-header">
-                                <i class="fas fa-info-circle"></i>
-                                Información del Curso
-                            </div>
-                            <div class="table-container">
-                                <div id="info-content" class="empty-state">
-                                    <i class="fas fa-clipboard-list fa-3x"></i>
-                                    <p>Información del curso seleccionado</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Panel de Información Resumida -->
-                    <div id="resumen-panel" class="info-panel" style="display: none;">
-                        <h3 style="margin-top: 0; color: #495057;">
-                            <i class="fas fa-chart-pie"></i>
-                            Resumen de la Currícula
-                        </h3>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">Total de Materias</div>
-                                <div class="info-value" id="total-materias">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Docentes Asignados</div>
-                                <div class="info-value" id="total-docentes">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Horas Semanales</div>
-                                <div class="info-value" id="total-horas">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Estado</div>
-                                <div class="info-value" id="estado-curricula">-</div>
                             </div>
                         </div>
                     </div>
@@ -174,22 +160,18 @@ $(document).ready(function() {
             // Ocultar el loader
             $('.loader').hide();
             
-            // Rebind events después de renderizar
-            this.bindEvents();
         },
         
         // Vincular eventos
         bindEvents: function() {
-            $(document).off('change', '#select-año').on('change', '#select-año', this.onAñoChange.bind(this));
-            $(document).off('change', '#select-nivel').on('change', '#select-nivel', this.onNivelChange.bind(this));
-            $(document).off('change', '#select-curso').on('change', '#select-curso', this.onCursoChange.bind(this));
-            $(document).off('change', '#select-division').on('change', '#select-division', this.onDivisionChange.bind(this));
-            $(document).off('click', '#btn-consultar').on('click', '#btn-consultar', this.consultarCurricula.bind(this));
+            // Solo necesitamos eventos para clicks en las tablas
+            $(document).off('click', '.btn-select-año').on('click', '.btn-select-año', this.onAñoSelect.bind(this));
+            $(document).off('click', '.btn-select-curso').on('click', '.btn-select-curso', this.onCursoSelect.bind(this));
+            $(document).off('click', '.btn-select-division').on('click', '.btn-select-division', this.onDivisionSelect.bind(this));
         },
         
         // Cargar datos iniciales
         loadInitialData: function() {
-            // Cargar años disponibles desde tu API
             this.loadAños();
         },
         
@@ -204,16 +186,10 @@ $(document).ready(function() {
                 },
                 dataType: 'json',
                 success: (data) => {
-                    console.log('Respuesta de años:', data); // Para debug
+                    console.log('Respuesta de años:', data);
                     
                     if (data.status === 'success') {
-                        // Guardar los datos para usar en la tabla
                         this.añosData = data.data;
-                        
-                        // Poblar el select
-                        this.populateSelect('#select-año', data.data, 'Seleccionar año...');
-                        
-                        // Mostrar tabla de años
                         this.loadAñosTable(data.data);
                     } else {
                         console.error('Error en respuesta:', data.message);
@@ -222,10 +198,57 @@ $(document).ready(function() {
                 },
                 error: (xhr, status, error) => {
                     console.error('Error al cargar años:', error);
-                    console.error('Respuesta completa:', xhr.responseText);
                     this.showErrorInAños('Error de conexión al cargar años');
                 }
             });
+        },
+        
+        // Cargar datos de currícula por año
+        loadCurriculaPorAnio: function(anio) {
+            // Mostrar estado de carga
+            this.showLoading();
+            
+            $.ajax({
+                url: this.apiEndpoint,
+                method: 'POST',
+                data: { 
+                    accion: 'obtener_curricula_por_anio',
+                    anio: anio,
+                    api_key: this.api_key 
+                },
+                dataType: 'json',
+                success: (data) => {
+                    console.log('Respuesta de currícula:', data);
+                    
+                    if (data.status === 'success') {
+                        this.curriculaData = data.data;
+                        this.selectedAño = anio;
+                        this.processCurriculaData(data.data);
+                        this.showNotification(`Datos del año ${anio} cargados correctamente`, 'success');
+                    } else {
+                        console.error('Error en respuesta:', data.message);
+                        this.showError('Error al cargar currícula: ' + (data.message || 'Error desconocido'));
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('Error al cargar currícula:', error);
+                    this.showError('Error de conexión al cargar currícula');
+                }
+            });
+        },
+        
+        // Procesar datos de currícula
+        processCurriculaData: function(data) {
+            // Cargar tablas con los datos recibidos
+            this.loadCursosTable(data.cursos || []);
+            this.loadDivisionesTable(data.divisiones || []);
+            this.loadMateriasTable(data.matxdiv || []);
+            this.loadDocentesTable(data.docentes || []);
+            this.loadPreceptoresTable(data.preceptores || []);
+            
+            // Mostrar resumen
+            this.updateResumen(data);
+            $('#resumen-panel').show();
         },
         
         // Cargar tabla de años
@@ -249,12 +272,10 @@ $(document).ready(function() {
             `;
             
             años.forEach(año => {
-                // Adaptar según tu estructura de respuesta
                 const añoId = año.anio;
                 const añoNombre = año.anio;
                 const añoEstado = año.aniolec_stat;
                 
-                // Convertir estado a texto legible
                 let estadoTexto = '';
                 let estadoClass = '';
                 
@@ -276,7 +297,6 @@ $(document).ready(function() {
                         estadoClass = 'inactivo';
                 }
                 
-                // Descripción basada en el estado
                 let descripcion = '';
                 switch(añoEstado) {
                     case 'a':
@@ -303,8 +323,7 @@ $(document).ready(function() {
                         <td class="text-muted">${descripcion}</td>
                         <td>
                             <button class="btn btn-sm btn-primary btn-select-año" data-año="${añoId}" ${añoEstado === 'i' ? 'disabled' : ''}>
-                                <i class="fas fa-check"></i> 
-                                ${añoEstado === 'a' ? 'Año Actual' : 'Seleccionar'}
+                                ${añoEstado === 'a' ? 'Ver Año Actual' : 'Ver Currícula'}
                             </button>
                         </td>
                     </tr>
@@ -314,40 +333,378 @@ $(document).ready(function() {
             html += '</tbody></table>';
             $('#años-content').html(html);
             
-            // Eventos para selección de año desde la tabla
-            $('.btn-select-año').off('click').on('click', (e) => {
-                const añoId = $(e.currentTarget).data('año');
-                this.selectAñoFromTable(añoId);
-            });
-            
-            // Evento para highlight al hacer hover
-            $('.año-row').off('mouseenter mouseleave').on('mouseenter', function() {
-                $(this).addClass('table-hover-highlight');
-            }).on('mouseleave', function() {
-                $(this).removeClass('table-hover-highlight');
-            });
-            
             // Auto-seleccionar el año activo si existe
             const añoActivo = años.find(a => a.aniolec_stat === 'a');
             if (añoActivo) {
-                // Pequeño delay para que se renderice la tabla primero
                 setTimeout(() => {
                     this.selectAñoFromTable(añoActivo.anio);
                 }, 100);
             }
         },
         
+        // Cargar tabla de cursos
+        loadCursosTable: function(cursos) {
+            if (!cursos || cursos.length === 0) {
+                $('#cursos-content').html('<div class="empty-state"><i class="fas fa-graduation-cap fa-3x"></i><p>No hay cursos disponibles</p></div>');
+                return;
+            }
+            
+            let html = `
+                <table class="curricula-table">
+                    <thead>
+                        <tr>
+                            <th>Curso</th>
+                            <th>Ciclo</th>
+                            <th>Divisiones</th>
+                            <th>Materias</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            cursos.forEach(curso => {
+                html += `
+                    <tr data-curso-id="${curso.id}" data-ciclo="${curso.ciclo_id}" class="curso-row">
+                        <td><strong>${curso.nombre}</strong></td>
+                        <td><span class="badge badge-info">${curso.ciclo_id}</span></td>
+                        <td><span class="badge badge-secondary">${curso.total_divisiones}</span></td>
+                        <td><span class="badge badge-primary">${curso.total_materias}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-select-curso" 
+                                    data-curso="${curso.id}" 
+                                    data-ciclo="${curso.ciclo_id}">
+                                 Ver Divisiones
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            $('#cursos-content').html(html);
+        },
+        
+        // Cargar tabla de divisiones
+        loadDivisionesTable: function(divisiones) {
+            if (!divisiones || divisiones.length === 0) {
+                $('#divisiones-content').html('<div class="empty-state"><i class="fas fa-users fa-3x"></i><p>No hay divisiones disponibles</p></div>');
+                return;
+            }
+            
+            let html = `
+                <table class="curricula-table">
+                    <thead>
+                        <tr>
+                            <th>División</th>
+                            <th>Ciclo</th>
+                            <th>Curso</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            divisiones.forEach(division => {
+                const estadoTexto = division.division_estado === 'A' ? 'Activa' : 'Inactiva';
+                const estadoClass = division.division_estado === 'A' ? 'activo' : 'inactivo';
+                
+                html += `
+                    <tr data-division-id="${division.division_id}" data-ciclo="${division.ciclo_id}" data-curso="${division.curso_id}" class="division-row">
+                        <td><strong>${division.division_completa}</strong></td>
+                        <td><span class="badge badge-info">${division.ciclo_id}</span></td>
+                        <td><span class="badge badge-warning">${division.curso_id}</span></td>
+                        <td>
+                            <span class="status-badge status-${estadoClass}">
+                                ${estadoTexto}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-select-division" 
+                                    data-division="${division.division_id}" 
+                                    data-ciclo="${division.ciclo_id}" 
+                                    data-curso="${division.curso_id}">
+                                 Ver Materias
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            $('#divisiones-content').html(html);
+        },
+        
+        // Cargar tabla de materias
+        loadMateriasTable: function(materias) {
+            if (!materias || materias.length === 0) {
+                $('#materias-content').html('<div class="empty-state"><i class="fas fa-book-open fa-3x"></i><p>No hay materias registradas</p></div>');
+                return;
+            }
+            
+            let html = `
+                <table class="curricula-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Materia</th>
+                            <th>División</th>
+                            <th>Estado Docente</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            materias.forEach(materia => {
+                const estadoClass = materia.estado_docente === 'Con Docente' ? 'activo' : 'inactivo';
+                
+                html += `
+                    <tr data-materia-id="${materia.materia_id}" class="materia-row">
+                        <td><strong>${materia.materia_id}</strong></td>
+                        <td>${materia.materia_nombre}</td>
+                        <td><span class="badge badge-info">${materia.division_completa}</span></td>
+                        <td>
+                            <span class="status-badge status-${estadoClass}">
+                                ${materia.estado_docente}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            $('#materias-content').html(html);
+        },
+        
+        // Cargar tabla de docentes
+        loadDocentesTable: function(docentes) {
+            if (!docentes || docentes.length === 0) {
+                $('#docentes-content').html('<div class="empty-state"><i class="fas fa-user-tie fa-3x"></i><p>No hay docentes registrados</p></div>');
+                return;
+            }
+            
+            let html = `
+                <table class="curricula-table">
+                    <thead>
+                        <tr>
+                            <th>Legajo</th>
+                            <th>Nombre</th>
+                            <th>Apellidos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            docentes.forEach(docente => {
+                html += `
+                    <tr>
+                        <td><strong>${docente.legajo}</strong></td>
+                        <td>${docente.nombres}</td>
+                        <td>${docente.apellidos}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info">
+                                 Ver
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            $('#docentes-content').html(html);
+        },
+        
+        // Cargar tabla de preceptores
+        loadPreceptoresTable: function(preceptores) {
+            if (!preceptores || preceptores.length === 0) {
+                $('#preceptores-content').html('<div class="empty-state"><i class="fas fa-user-graduate fa-3x"></i><p>No hay preceptores registrados</p></div>');
+                return;
+            }
+            
+            let html = `
+                <table class="curricula-table">
+                    <thead>
+                        <tr>
+                            <th>Legajo</th>
+                            <th>Nombre</th>
+                            <th>División</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            preceptores.forEach(preceptor => {
+                html += `
+                    <tr>
+                        <td><strong>${preceptor.legajo}</strong></td>
+                        <td>${preceptor.nombre}</td>
+                        <td><span class="badge badge-info">${preceptor.division_completa}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            $('#preceptores-content').html(html);
+        },
+        
+        // Eventos de selección desde las tablas
+        onAñoSelect: function(e) {
+            const añoId = $(e.currentTarget).data('año');
+            this.selectAñoFromTable(añoId);
+        },
+        
+        onCursoSelect: function(e) {
+            const button = $(e.currentTarget);
+            const cursoId = button.data('curso');
+            const cicloId = button.data('ciclo');
+            this.selectCursoFromTable(cursoId, cicloId);
+        },
+        
+        onDivisionSelect: function(e) {
+            const button = $(e.currentTarget);
+            this.selectDivisionFromTable(
+                button.data('ciclo'),
+                button.data('curso'),
+                button.data('division')
+            );
+        },
+        
         // Seleccionar año desde la tabla
         selectAñoFromTable: function(añoId) {
-            // Actualizar el select
-            $('#select-año').val(añoId).trigger('change');
-            
-            // Highlight en la tabla
+            // Marcar año como seleccionado
             $('.año-row').removeClass('selected');
             $(`.año-row[data-año-id="${añoId}"]`).addClass('selected');
             
-            // Mensaje de confirmación
+            // Cargar datos del año
+            this.loadCurriculaPorAnio(añoId);
             this.showNotification(`Año ${añoId} seleccionado`, 'success');
+        },
+        
+        // Seleccionar curso desde la tabla
+        selectCursoFromTable: function(cursoId, cicloId) {
+            $('.curso-row').removeClass('selected');
+            $(`.curso-row[data-curso-id="${cursoId}"]`).addClass('selected');
+            
+            // Filtrar divisiones para este curso
+            if (this.curriculaData && this.curriculaData.divisiones) {
+                const divisionesFiltradas = this.curriculaData.divisiones.filter(div => 
+                    div.id === cursoId && div.ciclo_id === cicloId
+                );
+                this.loadDivisionesTable(divisionesFiltradas);
+                
+                // Limpiar materias hasta que se seleccione una división
+                $('#materias-content').html('<div class="empty-state"><i class="fas fa-book-open fa-3x"></i><p>Selecciona una división para ver las materias</p></div>');
+                
+                this.showNotification(`Curso ${cursoId} seleccionado`, 'info');
+            }
+        },
+        
+        // Seleccionar división desde la tabla
+        selectDivisionFromTable: function(ciclo, curso, division) {
+            $('.division-row').removeClass('selected');
+            $(`.division-row[data-ciclo="${ciclo}"][data-curso="${curso}"][data-division-id="${division}"]`).addClass('selected');
+            
+            // Filtrar materias para esta división
+            if (this.curriculaData && this.curriculaData.matxdiv) {
+                const materiasFiltradas = this.curriculaData.matxdiv.filter(mat => 
+                    mat.ciclo_id === ciclo && 
+                    mat.curso_id === curso && 
+                    mat.division_id === division
+                );
+                this.loadMateriasTable(materiasFiltradas);
+                
+                // Actualizar resumen con datos específicos de la división
+                this.updateResumenEspecifico({
+                    año: this.selectedAño,
+                    ciclo: ciclo,
+                    curso: curso,
+                    division: division,
+                    materias: materiasFiltradas
+                });
+                
+                this.showNotification(`División ${division} seleccionada`, 'info');
+            }
+        },
+        
+        // Actualizar resumen general
+        updateResumen: function(data) {
+            $('#año-seleccionado').text(this.selectedAño || '-');
+            $('#total-materias').text(data.matxdiv ? data.matxdiv.length : 0);
+            $('#total-cursos').text(data.cursos ? data.cursos.length : 0);
+            $('#total-divisiones').text(data.divisiones ? data.divisiones.length : 0);
+            $('#total-docentes').text(data.docentes ? data.docentes.length : 0);
+            $('#total-preceptores').text(data.preceptores ? data.preceptores.length : 0);
+        },
+        
+        // Actualizar resumen específico para una división
+        updateResumenEspecifico: function(data) {
+            const infoHtml = `
+                <h3 style="margin-top: 0; color: #495057;">
+                    <i class="fas fa-chart-pie"></i>
+                    Resumen - ${data.ciclo} ${data.curso} División ${data.division} (${data.año})
+                </h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Año Académico</div>
+                        <div class="info-value">${data.año}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Ciclo</div>
+                        <div class="info-value">${data.ciclo}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Curso</div>
+                        <div class="info-value">${data.curso}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">División</div>
+                        <div class="info-value">${data.division}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Total Materias</div>
+                        <div class="info-value">${data.materias.length}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Con Docente</div>
+                        <div class="info-value">${data.materias.filter(m => m.estado_docente === 'Con Docente').length}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Sin Docente</div>
+                        <div class="info-value">${data.materias.filter(m => m.estado_docente === 'Sin Docente').length}</div>
+                    </div>
+                </div>
+            `;
+            
+            $('#resumen-panel').html(infoHtml);
+        },
+
+        // Limpiar tablas
+        clearTables: function() {
+            $('#cursos-content').html('<div class="empty-state"><i class="fas fa-graduation-cap fa-3x"></i><p>Selecciona un año para ver los cursos</p></div>');
+            $('#divisiones-content').html('<div class="empty-state"><i class="fas fa-users fa-3x"></i><p>Selecciona un curso para ver las divisiones</p></div>');
+            $('#materias-content').html('<div class="empty-state"><i class="fas fa-book-open fa-3x"></i><p>Selecciona una división para ver las materias</p></div>');
+            $('#docentes-content').html('<div class="empty-state"><i class="fas fa-user-tie fa-3x"></i><p>Información de docentes disponible</p></div>');
+            $('#preceptores-content').html('<div class="empty-state"><i class="fas fa-user-graduate fa-3x"></i><p>Información de preceptores disponible</p></div>');
+            $('#resumen-panel').hide();
+        },
+        
+        // Mostrar estado de carga
+        showLoading: function() {
+            const loadingHtml = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando datos...</div>';
+            
+            $('#cursos-content').html(loadingHtml);
+            $('#divisiones-content').html(loadingHtml);
+            $('#materias-content').html(loadingHtml);
+            $('#docentes-content').html(loadingHtml);
+            $('#preceptores-content').html(loadingHtml);
         },
         
         // Mostrar error específico en la tabla de años
@@ -364,12 +721,22 @@ $(document).ready(function() {
             $('#años-content').html(errorHtml);
         },
         
+        // Mostrar error general
+        showError: function(message) {
+            const errorHtml = `<div class="empty-state error-state"><i class="fas fa-exclamation-triangle fa-3x"></i><p>${message}</p></div>`;
+            
+            $('#cursos-content').html(errorHtml);
+            $('#divisiones-content').html(errorHtml);
+            $('#materias-content').html(errorHtml);
+            $('#docentes-content').html(errorHtml);
+            $('#preceptores-content').html(errorHtml);
+        },
+        
         // Función para mostrar notificaciones
         showNotification: function(message, type = 'info') {
-            // Crear notificación temporal
             const notification = $(`
                 <div class="alert alert-${type} alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                    <i class="fas fa-${type === 'success' ? 'check' : 'info'}-circle"></i>
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'warning' ? 'exclamation' : 'info'}-circle"></i>
                     ${message}
                     <button type="button" class="close" data-dismiss="alert">
                         <span>&times;</span>
@@ -383,461 +750,6 @@ $(document).ready(function() {
             setTimeout(() => {
                 notification.alert('close');
             }, 3000);
-        },
-        
-        // Evento: cambio de año
-        onAñoChange: function() {
-            const año = $('#select-año').val();
-            
-            // Actualizar highlight en tabla de años
-            $('.año-row').removeClass('selected');
-            if (año) {
-                $(`.año-row[data-año-id="${año}"]`).addClass('selected');
-                
-                this.loadNiveles(año);
-                $('#select-nivel').prop('disabled', false);
-            } else {
-                this.resetSelects(['nivel', 'curso', 'division']);
-            }
-            
-            this.checkConsultarButton();
-        },
-        
-        // Evento: cambio de nivel
-        onNivelChange: function() {
-            const nivel = $('#select-nivel').val();
-            
-            if (nivel) {
-                this.loadCursos(nivel);
-                $('#select-curso').prop('disabled', false);
-            } else {
-                this.resetSelects(['curso', 'division']);
-            }
-            
-            this.checkConsultarButton();
-        },
-        
-        // Evento: cambio de curso
-        onCursoChange: function() {
-            const curso = $('#select-curso').val();
-            
-            if (curso) {
-                this.loadDivisiones(curso);
-                $('#select-division').prop('disabled', false);
-            } else {
-                this.resetSelects(['division']);
-            }
-            
-            this.checkConsultarButton();
-        },
-        
-        // Evento: cambio de división
-        onDivisionChange: function() {
-            this.checkConsultarButton();
-        },
-        
-        // Cargar niveles basado en el año
-        loadNiveles: function(año) {
-            $.ajax({
-                url: this.apiEndpoint,
-                method: 'POST',
-                data: { 
-                    action: 'get_niveles', 
-                    año: año,
-                    apiKey: this.api_key 
-                },
-                dataType: 'json',
-                success: (data) => {
-                    if (data.success) {
-                        this.populateSelect('#select-nivel', data.niveles, 'Seleccionar nivel...');
-                    }
-                },
-                error: (xhr, status, error) => {
-                    console.error('Error al cargar niveles:', error);
-                    // Fallback con datos estáticos
-                    const niveles = [
-                        { id: 'inicial', nombre: 'Nivel Inicial' },
-                        { id: 'primario', nombre: 'Nivel Primario' },
-                        { id: 'secundario', nombre: 'Nivel Secundario' }
-                    ];
-                    this.populateSelect('#select-nivel', niveles, 'Seleccionar nivel...');
-                }
-            });
-        },
-        
-        // Cargar cursos basado en el nivel
-        loadCursos: function(nivel) {
-            const año = $('#select-año').val();
-            
-            $.ajax({
-                url: this.apiEndpoint,
-                method: 'POST',
-                data: { 
-                    action: 'get_cursos', 
-                    año: año, 
-                    nivel: nivel,
-                    apiKey: this.api_key 
-                },
-                dataType: 'json',
-                success: (data) => {
-                    if (data.success) {
-                        this.populateSelect('#select-curso', data.cursos, 'Seleccionar curso...');
-                    }
-                },
-                error: (xhr, status, error) => {
-                    console.error('Error al cargar cursos:', error);
-                    // Fallback con datos estáticos
-                    this.loadCursosFallback(nivel);
-                }
-            });
-        },
-        
-        // Fallback para cursos
-        loadCursosFallback: function(nivel) {
-            const cursos = {
-                'inicial': [
-                    { id: '3años', nombre: '3 años' },
-                    { id: '4años', nombre: '4 años' },
-                    { id: '5años', nombre: '5 años' }
-                ],
-                'primario': [
-                    { id: '1ro', nombre: '1° Grado' },
-                    { id: '2do', nombre: '2° Grado' },
-                    { id: '3ro', nombre: '3° Grado' },
-                    { id: '4to', nombre: '4° Grado' },
-                    { id: '5to', nombre: '5° Grado' },
-                    { id: '6to', nombre: '6° Grado' }
-                ],
-                'secundario': [
-                    { id: '1año', nombre: '1° Año' },
-                    { id: '2año', nombre: '2° Año' },
-                    { id: '3año', nombre: '3° Año' },
-                    { id: '4año', nombre: '4° Año' },
-                    { id: '5año', nombre: '5° Año' }
-                ]
-            };
-            
-            this.populateSelect('#select-curso', cursos[nivel] || [], 'Seleccionar curso...');
-        },
-        
-        // Cargar divisiones basado en el curso
-        loadDivisiones: function(curso) {
-            const año = $('#select-año').val();
-            const nivel = $('#select-nivel').val();
-            
-            $.ajax({
-                url: this.apiEndpoint,
-                method: 'POST',
-                data: { 
-                    action: 'get_divisiones', 
-                    año: año, 
-                    nivel: nivel, 
-                    curso: curso,
-                    apiKey: this.api_key 
-                },
-                dataType: 'json',
-                success: (data) => {
-                    if (data.success) {
-                        this.populateSelect('#select-division', data.divisiones, 'Seleccionar división...');
-                    }
-                },
-                error: (xhr, status, error) => {
-                    console.error('Error al cargar divisiones:', error);
-                    // Fallback con datos estáticos
-                    const divisiones = [
-                        { id: 'A', nombre: 'División A' },
-                        { id: 'B', nombre: 'División B' },
-                        { id: 'C', nombre: 'División C' }
-                    ];
-                    this.populateSelect('#select-division', divisiones, 'Seleccionar división...');
-                }
-            });
-        },
-        
-        // Poblar select con opciones
-        populateSelect: function(selector, options, placeholder) {
-            const $select = $(selector);
-            $select.empty().append(`<option value="">${placeholder}</option>`);
-            
-            options.forEach(option => {
-                // Adaptar según la estructura de tu respuesta
-                let optionId, optionNombre;
-                
-                if (selector === '#select-año') {
-                    // Para años, usar tu estructura específica
-                    optionId = option.anio;
-                    optionNombre = option.anio;
-                    
-                    // Solo agregar años que no estén inactivos
-                    if (option.aniolec_stat !== 'i') {
-                        // Agregar indicador si es el año activo
-                        const indicador = option.aniolec_stat === 'a' ? ' (Actual)' : '';
-                        $select.append(`<option value="${optionId}">${optionNombre}${indicador}</option>`);
-                    }
-                } else {
-                    // Para otros selects, usar estructura estándar
-                    optionId = option.id || option.anio_academico || option.año;
-                    optionNombre = option.nombre || option.descripcion || option.anio_academico || option.año;
-                    $select.append(`<option value="${optionId}">${optionNombre}</option>`);
-                }
-            });
-        },
-        
-        // Resetear selects
-        resetSelects: function(selects) {
-            selects.forEach(select => {
-                $(`#select-${select}`).empty()
-                    .append('<option value="">Seleccionar...</option>')
-                    .prop('disabled', true);
-            });
-            
-            this.clearTables();
-        },
-        
-        // Verificar si se puede habilitar el botón consultar
-        checkConsultarButton: function() {
-            const año = $('#select-año').val();
-            const nivel = $('#select-nivel').val();
-            const curso = $('#select-curso').val();
-            const division = $('#select-division').val();
-            
-            const enabled = año && nivel && curso && division;
-            $('#btn-consultar').prop('disabled', !enabled);
-        },
-        
-        // Consultar currícula - FUNCIÓN PRINCIPAL
-        consultarCurricula: function() {
-            const formData = {
-                action: 'get_curricula',
-                año: $('#select-año').val(),
-                nivel: $('#select-nivel').val(),
-                curso: $('#select-curso').val(),
-                division: $('#select-division').val(),
-                apiKey: this.api_key
-            };
-            
-            this.showLoading();
-            
-            // Petición AJAX a tu endpoint
-            $.ajax({
-                url: this.apiEndpoint,
-                method: 'POST',
-                data: formData,
-                dataType: 'json',
-                success: (data) => {
-                    if (data.success) {
-                        this.loadCurriculaData(data.data);
-                    } else {
-                        this.showError(data.message || 'Error al cargar los datos');
-                    }
-                },
-                error: (xhr, status, error) => {
-                    console.error('Error al consultar currícula:', error);
-                    this.showError('Error de conexión. Por favor, intenta nuevamente.');
-                }
-            });
-        },
-        
-        // Mostrar estado de carga
-        showLoading: function() {
-            const loadingHtml = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando datos...</div>';
-            
-            $('#materias-content').html(loadingHtml);
-            $('#docentes-content').html(loadingHtml);
-            $('#horarios-content').html(loadingHtml);
-            $('#info-content').html(loadingHtml);
-        },
-        
-        // Cargar datos de currícula
-        loadCurriculaData: function(data) {
-            this.currentData = data;
-            
-            this.loadMateriasTable(data.materias || []);
-            this.loadDocentesTable([]);
-            this.loadHorariosTable([]);
-            this.loadInfoPanel(data.info || {});
-            this.updateResumen(data);
-            
-            $('#resumen-panel').show();
-        },
-        
-        // Cargar tabla de materias
-        loadMateriasTable: function(materias) {
-            if (!materias || materias.length === 0) {
-                $('#materias-content').html('<div class="empty-state"><i class="fas fa-book-open fa-3x"></i><p>No hay materias registradas para este curso</p></div>');
-                return;
-            }
-            
-            let html = `
-                <table class="curricula-table">
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Materia</th>
-                            <th>Horas</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            materias.forEach(materia => {
-                html += `
-                    <tr data-materia-id="${materia.id}" class="materia-row">
-                        <td>${materia.codigo}</td>
-                        <td>${materia.nombre}</td>
-                        <td>${materia.horas}</td>
-                        <td><span class="status-badge status-${materia.estado.toLowerCase()}">${materia.estado}</span></td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            $('#materias-content').html(html);
-            
-            // Eventos para selección de materia
-            $('.materia-row').off('click').on('click', (e) => {
-                const materiaId = $(e.currentTarget).data('materia-id');
-                this.selectMateria(materiaId);
-            });
-        },
-        
-        // Seleccionar materia
-        selectMateria: function(materiaId) {
-            $('.materia-row').removeClass('selected');
-            $(`.materia-row[data-materia-id="${materiaId}"]`).addClass('selected');
-            
-            this.selectedMateria = materiaId;
-            const materia = this.currentData.materias.find(m => m.id == materiaId);
-            
-            if (materia) {
-                this.loadDocentesTable(materia.docentes || []);
-                this.loadHorariosTable(materia.horarios || []);
-            }
-        },
-        
-        // Cargar tabla de docentes
-        loadDocentesTable: function(docentes) {
-            if (!docentes || docentes.length === 0) {
-                $('#docentes-content').html('<div class="empty-state"><i class="fas fa-user-tie fa-3x"></i><p>Selecciona una materia para ver los docentes</p></div>');
-                return;
-            }
-            
-            let html = `
-                <table class="curricula-table">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Cargo</th>
-                            <th>Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            docentes.forEach(docente => {
-                html += `
-                    <tr>
-                        <td>${docente.nombre}</td>
-                        <td>${docente.cargo}</td>
-                        <td>${docente.email || '-'}</td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            $('#docentes-content').html(html);
-        },
-        
-        // Cargar tabla de horarios
-        loadHorariosTable: function(horarios) {
-            if (!horarios || horarios.length === 0) {
-                $('#horarios-content').html('<div class="empty-state"><i class="fas fa-calendar-alt fa-3x"></i><p>Selecciona una materia para ver los horarios</p></div>');
-                return;
-            }
-            
-            let html = `
-                <table class="curricula-table">
-                    <thead>
-                        <tr>
-                            <th>Día</th>
-                            <th>Hora Inicio</th>
-                            <th>Hora Fin</th>
-                            <th>Aula</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            horarios.forEach(horario => {
-                html += `
-                    <tr>
-                        <td>${horario.dia}</td>
-                        <td>${horario.hora_inicio}</td>
-                        <td>${horario.hora_fin}</td>
-                        <td>${horario.aula || '-'}</td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            $('#horarios-content').html(html);
-        },
-        
-        // Cargar panel de información
-        loadInfoPanel: function(info) {
-            let html = `
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Curso</div>
-                        <div class="info-value">${info.curso || '-'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">División</div>
-                        <div class="info-value">${info.division || '-'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Año Académico</div>
-                        <div class="info-value">${info.año || '-'}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Cantidad Alumnos</div>
-                        <div class="info-value">${info.cantidad_alumnos || '-'}</div>
-                    </div>
-                </div>
-            `;
-            
-            $('#info-content').html(html);
-        },
-        
-        // Actualizar resumen
-        updateResumen: function(data) {
-            const resumen = data.resumen || {};
-            $('#total-materias').text(data.materias ? data.materias.length : 0);
-            $('#total-docentes').text(resumen.total_docentes || 0);
-            $('#total-horas').text(resumen.total_horas || 0);
-            $('#estado-curricula').text(resumen.estado || 'Pendiente');
-        },
-        
-        // Limpiar tablas
-        clearTables: function() {
-            $('#materias-content').html('<div class="empty-state"><i class="fas fa-book-open fa-3x"></i><p>Selecciona un curso para ver las materias</p></div>');
-            $('#docentes-content').html('<div class="empty-state"><i class="fas fa-user-tie fa-3x"></i><p>Selecciona una materia para ver los docentes</p></div>');
-            $('#horarios-content').html('<div class="empty-state"><i class="fas fa-calendar-alt fa-3x"></i><p>Selecciona una materia para ver los horarios</p></div>');
-            $('#info-content').html('<div class="empty-state"><i class="fas fa-clipboard-list fa-3x"></i><p>Información del curso seleccionado</p></div>');
-            $('#resumen-panel').hide();
-            
-            // No limpiar la tabla de años, solo las demás
-        },
-        
-        // Mostrar error
-        showError: function(message) {
-            const errorHtml = `<div class="empty-state error-state"><i class="fas fa-exclamation-triangle fa-3x"></i><p>${message}</p></div>`;
-            
-            $('#materias-content').html(errorHtml);
-            $('#docentes-content').html(errorHtml);
-            $('#horarios-content').html(errorHtml);
-            $('#info-content').html(errorHtml);
         }
     };
     
