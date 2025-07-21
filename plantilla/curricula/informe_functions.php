@@ -557,8 +557,10 @@ $(document).ready(function() {
         
         // Eventos de selección desde las tablas
         onAñoSelect: function(e) {
-            const añoId = $(e.currentTarget).data('año');
+            const añoId = $(e.currentTarget).data('año').toString();
             this.selectAñoFromTable(añoId);
+            console.log('select año'+ añoId);
+            
         },
         
         onCursoSelect: function(e) {
