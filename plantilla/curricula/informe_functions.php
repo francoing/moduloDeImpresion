@@ -11,6 +11,7 @@ $(document).ready(function() {
         api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0=',
         añosData: null,
         curriculaData: null,
+        materiasData:null,
         
         // Inicialización del sistema
         init: function() {
@@ -81,20 +82,6 @@ $(document).ready(function() {
                             </div>
                         </div>
 
-                        <!-- Tabla de Cursos -->
-                        <div class="table-section">
-                            <div class="table-header">
-                                <i class="fas fa-graduation-cap"></i>
-                                Cursos Disponibles
-                            </div>
-                            <div class="table-container">
-                                <div id="cursos-content" class="empty-state">
-                                    <i class="fas fa-graduation-cap fa-3x"></i>
-                                    <p>Selecciona un año para ver los cursos</p>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Tabla de Divisiones -->
                         <div class="table-section">
                             <div class="table-header">
@@ -113,12 +100,40 @@ $(document).ready(function() {
                         <div class="table-section">
                             <div class="table-header">
                                 <i class="fas fa-book"></i>
-                                Materias por División
+                                Materias 
                             </div>
                             <div class="table-container">
                                 <div id="materias-content" class="empty-state">
                                     <i class="fas fa-book-open fa-3x"></i>
                                     <p>Selecciona una división para ver las materias</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Materias x division -->
+                        <div class="table-section">
+                            <div class="table-header">
+                                <i class="fas fa-book"></i>
+                                Materias por División
+                            </div>
+                            <div class="table-container">
+                                <div id="materiaspordiv-content" class="empty-state">
+                                    <i class="fas fa-book-open fa-3x"></i>
+                                    <p>Selecciona una división para ver las materias</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Cursos -->
+                        <div class="table-section">
+                            <div class="table-header">
+                                <i class="fas fa-graduation-cap"></i>
+                                Cursos Disponibles
+                            </div>
+                            <div class="table-container">
+                                <div id="cursos-content" class="empty-state">
+                                    <i class="fas fa-graduation-cap fa-3x"></i>
+                                    <p>Selecciona un año para ver los cursos</p>
                                 </div>
                             </div>
                         </div>
@@ -236,13 +251,51 @@ $(document).ready(function() {
                 }
             });
         },
+
+        // Carga de materias por divisiones 
+        loadMateriasPorDivision: function(anio,ciclo, curso, division) {
+            // Mostrar estado de carga
+            //this.showLoading();
+            
+            $.ajax({
+                url: this.apiEndpoint,
+                method: 'POST',
+                data: { 
+                    accion: 'obtener_materias',
+                    anio: anio,
+                    ciclo_id: ciclo,
+                    curso_id: curso,
+                    division_id: division,
+                    api_key: this.api_key 
+                },
+                dataType: 'json',
+                success: (data) => {
+                    console.log('Respuesta de currícula:', data);
+                    
+                    if (data.status === 'success') {
+                        this.materiasData = data.data;
+                        this.loadMateriasTable(data.data);
+                        //this.showNotification(`Datos del año ${anio} cargados correctamente`, 'success');
+                    } else {
+                        console.error('Error en respuesta:', data.message);
+                        this.showError('Error al cargar currícula: ' + (data.message || 'Error desconocido'));
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('Error al cargar currícula:', error);
+                    this.showError('Error de conexión al cargar currícula');
+                }
+            });
+        },
+
         
         // Procesar datos de currícula
         processCurriculaData: function(data) {
             // Cargar tablas con los datos recibidos
             this.loadCursosTable(data.cursos || []);
             this.loadDivisionesTable(data.divisiones || []);
-            this.loadMateriasTable(data.matxdiv || []);
+            this.loadMateriasTable(data.materias || []);
+            this.loadMateriasxDivTable(data.matxdiv || []);
             this.loadDocentesTable(data.docentes || []);
             this.loadPreceptoresTable(data.preceptores || []);
             
@@ -285,11 +338,11 @@ $(document).ready(function() {
                         estadoClass = 'activo';
                         break;
                     case 'v':
-                        estadoTexto = 'Vigente';
+                        estadoTexto = 'Vencido';
                         estadoClass = 'vigente';
                         break;
                     case 'i':
-                        estadoTexto = 'Inactivo';
+                        estadoTexto = 'Inscripcion';
                         estadoClass = 'inactivo';
                         break;
                     default:
@@ -435,11 +488,53 @@ $(document).ready(function() {
             html += '</tbody></table>';
             $('#divisiones-content').html(html);
         },
-        
+
         // Cargar tabla de materias
         loadMateriasTable: function(materias) {
             if (!materias || materias.length === 0) {
                 $('#materias-content').html('<div class="empty-state"><i class="fas fa-book-open fa-3x"></i><p>No hay materias registradas</p></div>');
+                return;
+            }
+            
+            let html = `
+                <table class="curricula-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Materia</th>
+                            <th>Abreviatura</th>
+                            <th>Analitico</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            materias.forEach(materia => {
+                
+                html += `
+                    <tr data-materia-id="${materia.id}" class="materia-row">
+                        <td><strong>${materia.codigo}</strong></td>
+                        <td>${materia.nombre}</td>
+                        <td>${materia.abreviatura}</td>
+                        <td>${materia.analitico}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-select-division">
+                                    Ver 
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            $('#materias-content').html(html);
+        },
+        
+        // Cargar tabla de materias
+        loadMateriasxDivTable: function(materias) {
+            if (!materias || materias.length === 0) {
+                $('#materiaspordiv-content').html('<div class="empty-state"><i class="fas fa-book-open fa-3x"></i><p>No hay materias registradas</p></div>');
                 return;
             }
             
@@ -474,7 +569,7 @@ $(document).ready(function() {
             });
             
             html += '</tbody></table>';
-            $('#materias-content').html(html);
+            $('#materiaspordiv-content').html(html);
         },
         
         // Cargar tabla de docentes
@@ -613,27 +708,8 @@ $(document).ready(function() {
         selectDivisionFromTable: function(ciclo, curso, division) {
             $('.division-row').removeClass('selected');
             $(`.division-row[data-ciclo="${ciclo}"][data-curso="${curso}"][data-division-id="${division}"]`).addClass('selected');
-            
-            // Filtrar materias para esta división
-            if (this.curriculaData && this.curriculaData.matxdiv) {
-                const materiasFiltradas = this.curriculaData.matxdiv.filter(mat => 
-                    mat.ciclo_id === ciclo && 
-                    mat.curso_id === curso && 
-                    mat.division_id === division
-                );
-                this.loadMateriasTable(materiasFiltradas);
-                
-                // Actualizar resumen con datos específicos de la división
-                this.updateResumenEspecifico({
-                    año: this.selectedAño,
-                    ciclo: ciclo,
-                    curso: curso,
-                    division: division,
-                    materias: materiasFiltradas
-                });
-                
+                this.loadMateriasPorDivision(this.selectedAño,ciclo, curso, division);
                 this.showNotification(`División ${division} seleccionada`, 'info');
-            }
         },
         
         // Actualizar resumen general
