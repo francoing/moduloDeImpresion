@@ -96,20 +96,6 @@ $(document).ready(function() {
                             </div>
                         </div>
 
-                        <!-- Tabla de Materias -->
-                        <div class="table-section">
-                            <div class="table-header">
-                                <i class="fas fa-book"></i>
-                                Materias 
-                            </div>
-                            <div class="table-container">
-                                <div id="materias-content" class="empty-state">
-                                    <i class="fas fa-book-open fa-3x"></i>
-                                    <p>Selecciona una división para ver las materias</p>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Tabla de Materias x division -->
                         <div class="table-section">
                             <div class="table-header">
@@ -124,6 +110,20 @@ $(document).ready(function() {
                             </div>
                         </div>
 
+                        <!-- Tabla de Materias -->
+                        <div class="table-section">
+                            <div class="table-header">
+                                <i class="fas fa-book"></i>
+                                Materias 
+                            </div>
+                            <div class="table-container">
+                                <div id="materias-content" class="empty-state">
+                                    <i class="fas fa-book-open fa-3x"></i>
+                                    <p>Selecciona una división para ver las materias</p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Tabla de Cursos -->
                         <div class="table-section">
                             <div class="table-header">
