@@ -11,7 +11,9 @@ $(document).ready(function() {
         api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0=',
         añosData: null,
         curriculaData: null,
+        matxdivData:null,
         materiasData:null,
+        docentesData:null,
         
         // Inicialización del sistema
         init: function() {
@@ -123,20 +125,6 @@ $(document).ready(function() {
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Tabla de Cursos -->
-                        <div class="table-section">
-                            <div class="table-header">
-                                <i class="fas fa-graduation-cap"></i>
-                                Cursos Disponibles
-                            </div>
-                            <div class="table-container">
-                                <div id="cursos-content" class="empty-state">
-                                    <i class="fas fa-graduation-cap fa-3x"></i>
-                                    <p>Selecciona un año para ver los cursos</p>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Tabla de Docentes -->
                         <div class="table-section">
@@ -183,6 +171,9 @@ $(document).ready(function() {
             $(document).off('click', '.btn-select-año').on('click', '.btn-select-año', this.onAñoSelect.bind(this));
             $(document).off('click', '.btn-select-curso').on('click', '.btn-select-curso', this.onCursoSelect.bind(this));
             $(document).off('click', '.btn-select-division').on('click', '.btn-select-division', this.onDivisionSelect.bind(this));
+            $(document).off('click', '.btn-select-materia').on('click', '.btn-select-materia', this.onMateriaSelect.bind(this));
+            $(document).off('click', '.btn-select-docente').on('click', '.btn-select-docente', this.onDocenteSelect.bind(this));
+
         },
         
         // Cargar datos iniciales
@@ -252,8 +243,8 @@ $(document).ready(function() {
             });
         },
 
-        // Carga de materias por divisiones 
-        loadMateriasPorDivision: function(anio,ciclo, curso, division) {
+        // Carga de materias
+        loadMatxDiv: function(anio,ciclo, curso, division) {
             // Mostrar estado de carga
             //this.showLoading();
             
@@ -261,7 +252,7 @@ $(document).ready(function() {
                 url: this.apiEndpoint,
                 method: 'POST',
                 data: { 
-                    accion: 'obtener_materias',
+                    accion: 'obtener_matxdiv',
                     anio: anio,
                     ciclo_id: ciclo,
                     curso_id: curso,
@@ -274,7 +265,74 @@ $(document).ready(function() {
                     
                     if (data.status === 'success') {
                         this.materiasData = data.data;
+                        this.loadMateriasxDivTable(data.data);
+                        //this.showNotification(`Datos del año ${anio} cargados correctamente`, 'success');
+                    } else {
+                        console.error('Error en respuesta:', data.message);
+                        this.showError('Error al cargar currícula: ' + (data.message || 'Error desconocido'));
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('Error al cargar currícula:', error);
+                    this.showError('Error de conexión al cargar currícula');
+                }
+            });
+        },
+
+        // Carga de materias por divisiones 
+        loadMateriasPorDivision: function(materia_id) {
+            // Mostrar estado de carga
+            //this.showLoading();
+            
+            $.ajax({
+                url: this.apiEndpoint,
+                method: 'POST',
+                data: { 
+                    accion: 'obtener_materias',
+                    materia_id:materia_id,
+                    api_key: this.api_key 
+                },
+                dataType: 'json',
+                success: (data) => {
+                    console.log('Respuesta de currícula:', data);
+                    
+                    if (data.status === 'success') {
+                        this.materiasData = data.data;
                         this.loadMateriasTable(data.data);
+                        //this.showNotification(`Datos del año ${anio} cargados correctamente`, 'success');
+                    } else {
+                        console.error('Error en respuesta:', data.message);
+                        this.showError('Error al cargar currícula: ' + (data.message || 'Error desconocido'));
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('Error al cargar currícula:', error);
+                    this.showError('Error de conexión al cargar currícula');
+                }
+            });
+        },
+
+        // Carga de materias
+        loadDocentes: function(anio,materia_id) {
+            // Mostrar estado de carga
+            //this.showLoading();
+            
+            $.ajax({
+                url: this.apiEndpoint,
+                method: 'POST',
+                data: { 
+                    accion: 'obtener_docentes',
+                    anio: anio,
+                    materia_id:materia_id,
+                    api_key: this.api_key 
+                },
+                dataType: 'json',
+                success: (data) => {
+                    console.log('Respuesta de currícula:', data);
+                    
+                    if (data.status === 'success') {
+                        this.docentesData = data.data;
+                        this.loadDocentesTable(data.data);
                         //this.showNotification(`Datos del año ${anio} cargados correctamente`, 'success');
                     } else {
                         console.error('Error en respuesta:', data.message);
@@ -478,7 +536,7 @@ $(document).ready(function() {
                                     data-division="${division.division_id}" 
                                     data-ciclo="${division.ciclo_id}" 
                                     data-curso="${division.curso_id}">
-                                 Ver Materias
+                                 Ver MatxDiv
                             </button>
                         </td>
                     </tr>
@@ -519,7 +577,10 @@ $(document).ready(function() {
                         <td>${materia.abreviatura}</td>
                         <td>${materia.analitico}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary btn-select-division">
+                            <button class="btn btn-sm btn-outline-primary btn-select-docente"
+                            data-anio="${this.selectedAño}"
+                            data-materia-id="${materia.id}"
+                            >
                                     Ver 
                             </button>
                         </td>
@@ -543,26 +604,38 @@ $(document).ready(function() {
                     <thead>
                         <tr>
                             <th>Código</th>
-                            <th>Materia</th>
-                            <th>División</th>
-                            <th>Estado Docente</th>
+                            <th>Numero</th>
+                            <th>Estado</th>
+                            <th>Tipo</th>
+                            <th>Observacion</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
             
             materias.forEach(materia => {
-                const estadoClass = materia.estado_docente === 'Con Docente' ? 'activo' : 'inactivo';
+                //const estadoClass = materia.estado_docente === 'Con Docente' ? 'activo' : 'inactivo';
+                const estadoTexto = materia.estado === 'A' ? 'Activa' : 'Inactiva';
+                const estadoClass = materia.estado === 'A' ? 'activo' : 'inactivo';
                 
                 html += `
-                    <tr data-materia-id="${materia.materia_id}" class="materia-row">
-                        <td><strong>${materia.materia_id}</strong></td>
-                        <td>${materia.materia_nombre}</td>
-                        <td><span class="badge badge-info">${materia.division_completa}</span></td>
+                    <tr data-materia-id="${materia.id}" class="materia-row">
+                        <td><strong>${materia.codigo}</strong></td>
+                        <td>${materia.numero}</td>
                         <td>
                             <span class="status-badge status-${estadoClass}">
-                                ${materia.estado_docente}
+                                ${estadoTexto}
                             </span>
+                        </td>
+                        <td>${materia.tipo}</td>
+                        <td>${materia.observacion}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-select-materia"
+                             data-materia-id="${materia.id}"
+                            >
+                                        Ver 
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -599,7 +672,7 @@ $(document).ready(function() {
                         <td>${docente.nombres}</td>
                         <td>${docente.apellidos}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-info">
+                            <button disabled class="btn btn-sm btn-outline-info">
                                  Ver
                             </button>
                         </td>
@@ -673,7 +746,33 @@ $(document).ready(function() {
                 button.data('division')
             );
         },
-        
+
+        onMateriaSelect: function(e) {
+            const button = $(e.currentTarget);
+            this.selectMateriaFromTable(
+                button.data('materia-id')
+            );
+        },
+
+        onDocenteSelect: function(e) {
+            const button = $(e.currentTarget);
+            this.selectDocenteFromTable(
+                button.data('anio'),
+                button.data('materia-id')
+            );
+        },
+
+        selectDocenteFromTable: function(año,materia) {
+
+            const añoId = Number(año);
+            // Marcar año como seleccionado
+            $('.materia-row').removeClass('selected');
+            $(`.materia-row[data-anio="${añoId}"][data-materia-id="${materia}"]`).addClass('selected');
+            
+            // Cargar datos del año
+            this.loadDocentes(año,materia);
+            this.showNotification(`Año ${año} seleccionado`, 'success');
+        },
         // Seleccionar año desde la tabla
         selectAñoFromTable: function(añoId) {
             // Marcar año como seleccionado
@@ -708,8 +807,15 @@ $(document).ready(function() {
         selectDivisionFromTable: function(ciclo, curso, division) {
             $('.division-row').removeClass('selected');
             $(`.division-row[data-ciclo="${ciclo}"][data-curso="${curso}"][data-division-id="${division}"]`).addClass('selected');
-                this.loadMateriasPorDivision(this.selectedAño,ciclo, curso, division);
+                this.loadMatxDiv(this.selectedAño,ciclo, curso, division);
                 this.showNotification(`División ${division} seleccionada`, 'info');
+        },
+
+        selectMateriaFromTable: function(materia) {
+            $('.materia-row').removeClass('selected');
+            $(`.materia-row[data-materia-id="${materia}"]`).addClass('selected');
+                this.loadMateriasPorDivision(materia);
+                this.showNotification(`Materia ${materia} seleccionada`, 'info');
         },
         
         // Actualizar resumen general
