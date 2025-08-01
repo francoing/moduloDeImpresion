@@ -7,6 +7,7 @@ $(document).ready(function() {
         selectedMateria: null,
         currentData: null,
         selectedAño: null,
+        //apiEndpoint: URL_API_DOS +'curricula/get_curricula_data.php',
         apiEndpoint: 'http://localhost/csc-back/api/curricula/get_curricula_data.php',
         api_key: 'VFVWT1RGTnNXV3BUUjNSYVkyNUdlbUl5YUhCamVWWk9Ta2hhUVdKVVNuQmhNV1JIVm1wU05VdHNjRUpYYXpGTVZWVm5kMWRYT0hwUlJWcEZVV3hOTTBwcVJUMD0=',
         añosData: null,
@@ -14,6 +15,11 @@ $(document).ready(function() {
         matxdivData:null,
         materiasData:null,
         docentesData:null,
+        selectedCiclo: null,    // Nueva propiedad
+        selectedCurso: null,    // Nueva propiedad
+        selectedDivision: null, // Nueva propiedad
+        selectedMateria: null, // Nueva propiedad
+        selectedNombreMateria:null,
         
         // Inicialización del sistema
         init: function() {
@@ -112,6 +118,23 @@ $(document).ready(function() {
                             </div>
                         </div>
 
+                        <!-- Tabla de Docentes -->
+                        <div class="table-section">
+                            <div class="table-header">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                                Docentes
+                                <button type="button" id="agregar_docente" class="btn btn-sm btn-success ml-auto">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="table-container">
+                                <div id="docentes-content" class="empty-state">
+                                    <i class="fas fa-user-tie fa-3x"></i>
+                                    <p>Información de docentes disponible</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Tabla de Materias -->
                         <div class="table-section">
                             <div class="table-header">
@@ -126,25 +149,14 @@ $(document).ready(function() {
                             </div>
                         </div>
 
-                        <!-- Tabla de Docentes -->
-                        <div class="table-section">
-                            <div class="table-header">
-                                <i class="fas fa-chalkboard-teacher"></i>
-                                Docentes
-                            </div>
-                            <div class="table-container">
-                                <div id="docentes-content" class="empty-state">
-                                    <i class="fas fa-user-tie fa-3x"></i>
-                                    <p>Información de docentes disponible</p>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Tabla de Preceptores -->
                         <div class="table-section">
                             <div class="table-header">
                                 <i class="fas fa-user-graduate"></i>
                                 Preceptores
+                                <button id="agregar_preceptor" class="btn btn-success btn-sm ml-auto">
+                                    <i class="fas fa-plus"></i>
+                                </button>
                             </div>
                             <div class="table-container">
                                 <div id="preceptores-content" class="empty-state">
@@ -313,7 +325,7 @@ $(document).ready(function() {
         },
 
         // Carga de materias
-        loadDocentes: function(anio,materia_id) {
+        loadDocentes: function(anio, materia_id, ciclo = null, curso = null, division = null) {
             // Mostrar estado de carga
             //this.showLoading();
             
@@ -322,6 +334,43 @@ $(document).ready(function() {
                 method: 'POST',
                 data: { 
                     accion: 'obtener_docentes',
+                    anio: anio,
+                    materia_id:materia_id,
+                    ciclo_id: ciclo,
+                    curso_id: curso,
+                    division_id: division,
+                    api_key: this.api_key 
+                },
+                dataType: 'json',
+                success: (data) => {
+                    console.log('Respuesta de currícula:', data);
+                    
+                    if (data.status === 'success') {
+                        this.docentesData = data.data;
+                        this.loadDocentesTable(data.data);
+                        //this.showNotification(`Datos del año ${anio} cargados correctamente`, 'success');
+                    } else {
+                        console.error('Error en respuesta:', data.message);
+                        this.showError('Error al cargar currícula: ' + (data.message || 'Error desconocido'));
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('Error al cargar currícula:', error);
+                    this.showError('Error de conexión al cargar currícula');
+                }
+            });
+        },
+
+        // Carga de materias
+        loadPrexDiv: function(anio,ciclo, curso, division) {
+            // Mostrar estado de carga
+            //this.showLoading();
+            
+            $.ajax({
+                url: this.apiEndpoint,
+                method: 'POST',
+                data: { 
+                    accion: '',
                     anio: anio,
                     materia_id:materia_id,
                     api_key: this.api_key 
@@ -632,7 +681,7 @@ $(document).ready(function() {
                         <td>${materia.observacion}</td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary btn-select-materia"
-                             data-materia-id="${materia.id}"
+                             data-materia-id="${materia.id}" data-anio="${this.selectedAño}"
                             >
                                         Ver 
                             </button>
@@ -672,8 +721,11 @@ $(document).ready(function() {
                         <td>${docente.nombres}</td>
                         <td>${docente.apellidos}</td>
                         <td>
-                            <button disabled class="btn btn-sm btn-outline-info">
-                                 Ver
+                            <button id="editar_docente" class="btn btn-sm btn-info">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button id="eliminar_docente" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i>
                             </button>
                         </td>
                     </tr>
@@ -750,7 +802,8 @@ $(document).ready(function() {
         onMateriaSelect: function(e) {
             const button = $(e.currentTarget);
             this.selectMateriaFromTable(
-                button.data('materia-id')
+                button.data('materia-id'),
+                button.data('anio')
             );
         },
 
@@ -805,15 +858,22 @@ $(document).ready(function() {
         
         // Seleccionar división desde la tabla
         selectDivisionFromTable: function(ciclo, curso, division) {
+            this.selectedCiclo = ciclo;
+            this.selectedCurso = curso;
+            this.selectedDivision = division;
+
             $('.division-row').removeClass('selected');
             $(`.division-row[data-ciclo="${ciclo}"][data-curso="${curso}"][data-division-id="${division}"]`).addClass('selected');
                 this.loadMatxDiv(this.selectedAño,ciclo, curso, division);
                 this.showNotification(`División ${division} seleccionada`, 'info');
         },
 
-        selectMateriaFromTable: function(materia) {
+        selectMateriaFromTable: function(materia,anio) {
             $('.materia-row').removeClass('selected');
-            $(`.materia-row[data-materia-id="${materia}"]`).addClass('selected');
+            $(`.materia-row[data-materia-id="${materia}"][data-anio="${anio}"]`).addClass('selected');
+                this.selectedMateria = materia;
+                this.selectedNombreMateria = this.materiasData[0].nombre;
+                this.loadDocentes(anio, materia, this.selectedCiclo, this.selectedCurso, this.selectedDivision);
                 this.loadMateriasPorDivision(materia);
                 this.showNotification(`Materia ${materia} seleccionada`, 'info');
         },
@@ -934,7 +994,9 @@ $(document).ready(function() {
             setTimeout(() => {
                 notification.alert('close');
             }, 3000);
-        }
+        },
+
+        
     };
     
     // Inicializar el sistema

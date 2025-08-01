@@ -36,25 +36,6 @@
 								</div>
 							</div>
 							
-							<!-- Botones de acción adicionales -->
-							<div class="container mt-4">
-								<div class="row">
-									<div class="col-md-12">
-										<div class="action-buttons text-right">
-											<button type="button" class="btn btn-info" id="btn-configuracion" data-toggle="modal" data-target="#modalConfiguracion">
-												<i class="fas fa-cogs"></i> Configuración
-											</button>
-											<button type="button" class="btn btn-success" id="btn-exportar" onclick="$('#modalExportacion').modal('show')">
-												<i class="fas fa-download"></i> Exportar
-											</button>
-											<button type="button" class="btn btn-primary" id="btn-actualizar" onclick="location.reload()">
-												<i class="fas fa-sync-alt"></i> Actualizar
-											</button>
-										</div>
-									</div>
-								</div>
-							</div>
-							
 						</div>
 					</div>
 				</div>
