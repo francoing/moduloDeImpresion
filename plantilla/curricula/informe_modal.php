@@ -240,6 +240,162 @@ $(document).ready(function() {
             $(this).removeClass('is-invalid');
         }
     });
+
+    $(document).on('click', '.btn-eliminar-docente', function() {
+            // Obtener datos del docente desde los data-attributes del botón
+            const $button = $(this);
+            const legajoDocente = $button.data('legajo');
+            const nombreDocente = $button.data('nombres');
+            const apellidoDocente = $button.data('apellidos');
+            const nombreCompleto = `${apellidoDocente}, ${nombreDocente}`;
+
+            console.log('Datos del docente a eliminar:', {
+                legajo: legajoDocente,
+                nombres: nombreDocente,
+                apellidos: apellidoDocente,
+                nombreCompleto: nombreCompleto
+            });
+
+            // Verificar que tenemos los datos necesarios
+            if (!legajoDocente || !CurriculaSystem.selectedAño || !CurriculaSystem.selectedCiclo || 
+                !CurriculaSystem.selectedCurso || !CurriculaSystem.selectedDivision || 
+                !CurriculaSystem.selectedMateria) {
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Información Incompleta',
+                    text: 'No se pudo obtener la información necesaria para eliminar el docente.',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            // Mostrar confirmación de eliminación con estilo danger
+            Swal.fire({
+                icon: 'question',
+                title: '¿Eliminar Docente?',
+                html: `
+                    <div class="alert alert-danger" role="alert">
+                        <strong>¿Está seguro que desea eliminar al docente:</strong><br>
+                        <span style="font-size: 1.1em;">${nombreCompleto}</span><br>
+                        <small>Legajo: ${legajoDocente}</small>
+                    </div>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-trash"></i> Sí, Eliminar',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-secondary'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Proceder con la eliminación
+                    eliminarDocente(legajoDocente, nombreCompleto);
+                }
+            });
+    });
+
+    // Función para eliminar el docente
+    function eliminarDocente(legajoDocente, nombreCompleto) {
+        // Preparar datos para enviar
+        const datosFormulario = {
+            anio: CurriculaSystem.selectedAño,
+            ciclo_id: CurriculaSystem.selectedCiclo,
+            curso_id: CurriculaSystem.selectedCurso,
+            division_id: CurriculaSystem.selectedDivision,
+            materia_id: CurriculaSystem.selectedMateria,
+            legajo_docente: legajoDocente,
+            api_key: CurriculaSystem.api_key
+        };
+
+        console.log('Datos a enviar para eliminar:', datosFormulario);
+
+        // Mostrar loading
+        Swal.fire({
+            title: 'Eliminando Docente...',
+            html: `<div class="d-flex align-items-center justify-content-center">
+                    <div class="spinner-border text-danger me-3" role="status"></div>
+                    <span>Eliminando a ${nombreCompleto}</span>
+                </div>`,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false
+        });
+
+        // Realizar petición AJAX
+        $.ajax({
+            url: 'http://localhost/csc-back/api/curricula/eliminar_docente.php',
+            method: 'POST',
+            data: datosFormulario,
+            dataType: 'json',
+            success: function(response) {
+                console.log('Respuesta del servidor:', response);
+                
+                if (response.status === 'success') {
+                    // Mostrar mensaje de éxito
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Docente Eliminado!',
+                        html: `<div class="alert alert-success" role="alert">
+                                ${response.message || `El docente <strong>${nombreCompleto}</strong> ha sido eliminado correctamente.`}
+                            </div>`,
+                        confirmButtonText: 'Perfecto',
+                        timer: 4000,
+                        timerProgressBar: true,
+                        customClass: {
+                            confirmButton: 'btn btn-success'
+                        }
+                    });
+
+                    // Recargar la tabla de docentes
+                    if (CurriculaSystem.selectedMateria) {
+                        CurriculaSystem.loadDocentes(
+                            CurriculaSystem.selectedAño,
+                            CurriculaSystem.selectedMateria,
+                            CurriculaSystem.selectedCiclo,
+                            CurriculaSystem.selectedCurso,
+                            CurriculaSystem.selectedDivision
+                        );
+                    }
+                } else {
+                    // Mostrar mensaje de error
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al Eliminar Docente',
+                        html: `<div class="alert alert-danger" role="alert">
+                                ${response.message || 'Ha ocurrido un error al intentar eliminar el docente. Por favor, inténtelo nuevamente.'}
+                            </div>`,
+                        confirmButtonText: 'Entendido',
+                        customClass: {
+                            confirmButton: 'btn btn-danger'
+                        }
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error en la petición:', error);
+                
+                // Mostrar mensaje de error de conexión
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Conexión',
+                    html: `<div class="alert alert-danger" role="alert">
+                            No se pudo conectar con el servidor. Por favor, verifique su conexión e inténtelo nuevamente.
+                        </div>`,
+                    confirmButtonText: 'Entendido',
+                    customClass: {
+                        confirmButton: 'btn btn-danger'
+                    }
+                });
+            }
+        });
+    } 
+
 });
 </script>
 

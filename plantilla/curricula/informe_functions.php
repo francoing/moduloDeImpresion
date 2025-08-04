@@ -716,16 +716,17 @@ $(document).ready(function() {
             
             docentes.forEach(docente => {
                 html += `
-                    <tr>
+                    <tr class="docente-row">
                         <td><strong>${docente.legajo}</strong></td>
                         <td>${docente.nombres}</td>
                         <td>${docente.apellidos}</td>
                         <td>
-                            <button id="editar_docente" class="btn btn-sm btn-info">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                            <button id="eliminar_docente" class="btn btn-sm btn-danger">
-                                <i class="fas fa-trash"></i>
+                            <button id="eliminar_docente" 
+                                class="btn btn-sm btn-outline-danger btn-eliminar-docente"
+                                data-legajo="${docente.legajo}"
+                                data-nombres="${docente.nombres}"
+                                data-apellidos="${docente.apellidos}">
+                                Eliminar
                             </button>
                         </td>
                     </tr>
@@ -977,7 +978,7 @@ $(document).ready(function() {
         },
         
         // Función para mostrar notificaciones
-        showNotification: function(message, type = 'info') {
+        showNotification: function(message, type = 'ino') {
             const notification = $(`
                 <div class="alert alert-${type} alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
                     <i class="fas fa-${type === 'success' ? 'check' : type === 'warning' ? 'exclamation' : 'info'}-circle"></i>
@@ -1002,4 +1003,4 @@ $(document).ready(function() {
     // Inicializar el sistema
     CurriculaSystem.init();
 });
-</script>
+</script>f
