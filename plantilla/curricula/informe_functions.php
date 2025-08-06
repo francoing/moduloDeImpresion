@@ -35,42 +35,8 @@ $(document).ready(function() {
                     <div class="curricula-header">
                         <h2>
                             <i class="fas fa-chart-bar"></i>
-                            Sistema de Gestión
+                            Curricula
                         </h2>
-                    </div>
-
-                    <!-- Panel de Resumen (donde estaban los selects) -->
-                    <div id="resumen-panel" class="info-panel" style="display: none;">
-                        <h3 style="margin-top: 0; color: #495057;">
-                            <i class="fas fa-chart-pie"></i>
-                            Resumen de la Currícula
-                        </h3>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">Año Seleccionado</div>
-                                <div class="info-value" id="año-seleccionado">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Total de Materias</div>
-                                <div class="info-value" id="total-materias">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Total de Cursos</div>
-                                <div class="info-value" id="total-cursos">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Total de Divisiones</div>
-                                <div class="info-value" id="total-divisiones">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Docentes Asignados</div>
-                                <div class="info-value" id="total-docentes">-</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Preceptores</div>
-                                <div class="info-value" id="total-preceptores">-</div>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Grid de Tablas -->
@@ -80,7 +46,7 @@ $(document).ready(function() {
                         <div class="table-section">
                             <div class="table-header">
                                 <i class="fas fa-calendar"></i>
-                                Años Disponibles
+                                Años
                             </div>
                             <div class="table-container">
                                 <div id="años-content" class="empty-state">
@@ -108,7 +74,7 @@ $(document).ready(function() {
                         <div class="table-section">
                             <div class="table-header">
                                 <i class="fas fa-book"></i>
-                                Materias por División
+                                Materias por Curso
                             </div>
                             <div class="table-container">
                                 <div id="materiaspordiv-content" class="empty-state">
@@ -153,7 +119,7 @@ $(document).ready(function() {
                         <div class="table-section">
                             <div class="table-header">
                                 <i class="fas fa-user-graduate"></i>
-                                Preceptores
+                                Preceptores / Tutores
                                 <button id="agregar_preceptor" class="btn btn-success btn-sm ml-auto">
                                     <i class="fas fa-plus"></i>
                                 </button>
@@ -348,6 +314,40 @@ $(document).ready(function() {
                     if (data.status === 'success') {
                         this.docentesData = data.data;
                         this.loadDocentesTable(data.data);
+                        //this.showNotification(`Datos del año ${anio} cargados correctamente`, 'success');
+                    } else {
+                        console.error('Error en respuesta:', data.message);
+                        this.showError('Error al cargar currícula: ' + (data.message || 'Error desconocido'));
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('Error al cargar currícula:', error);
+                    this.showError('Error de conexión al cargar currícula');
+                }
+            });
+        },
+
+        loadPreceptores: function( ciclo = null, curso = null, division = null) {
+            // Mostrar estado de carga
+            //this.showLoading();
+            
+            $.ajax({
+                url: this.apiEndpoint,
+                method: 'POST',
+                data: { 
+                    accion: 'obtener_preceptores',
+                    ciclo_id: ciclo,
+                    curso_id: curso,
+                    division_id: division,
+                    api_key: this.api_key 
+                },
+                dataType: 'json',
+                success: (data) => {
+                    console.log('Respuesta de preceptores:', data);
+                    
+                    if (data.status === 'success') {
+                        //this.docentesData = data.data;
+                        this.loadPreceptoresTable(data.data);
                         //this.showNotification(`Datos del año ${anio} cargados correctamente`, 'success');
                     } else {
                         console.error('Error en respuesta:', data.message);
@@ -611,7 +611,7 @@ $(document).ready(function() {
                             <th>Materia</th>
                             <th>Abreviatura</th>
                             <th>Analitico</th>
-                            <th>Acciones</th>
+                           
                         </tr>
                     </thead>
                     <tbody>
@@ -625,14 +625,6 @@ $(document).ready(function() {
                         <td>${materia.nombre}</td>
                         <td>${materia.abreviatura}</td>
                         <td>${materia.analitico}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary btn-select-docente"
-                            data-anio="${this.selectedAño}"
-                            data-materia-id="${materia.id}"
-                            >
-                                    Ver 
-                            </button>
-                        </td>
                     </tr>
                 `;
             });
@@ -759,14 +751,20 @@ $(document).ready(function() {
             
             preceptores.forEach(preceptor => {
                 html += `
-                    <tr>
+                    <tr class="preceptor-row">
                         <td><strong>${preceptor.legajo}</strong></td>
                         <td>${preceptor.nombre}</td>
-                        <td><span class="badge badge-info">${preceptor.division_completa}</span></td>
+                        <td><span class="badge badge-info">${preceptor.division_completa || 'No especificada'}</span></td>
                         <td>
-                            <button class="btn btn-sm btn-outline-info">
-                                <i class="fas fa-eye"></i> Ver
-                            </button>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-danger btn-eliminar-preceptor"
+                                        data-legajo="${preceptor.legajo}"
+                                        data-nombre="${preceptor.nombre}"
+                                        data-toggle="tooltip" 
+                                        title="Eliminar preceptor de esta división">
+                                     Eliminar
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -866,6 +864,7 @@ $(document).ready(function() {
             $('.division-row').removeClass('selected');
             $(`.division-row[data-ciclo="${ciclo}"][data-curso="${curso}"][data-division-id="${division}"]`).addClass('selected');
                 this.loadMatxDiv(this.selectedAño,ciclo, curso, division);
+                this.loadPreceptores(ciclo, curso, division);
                 this.showNotification(`División ${division} seleccionada`, 'info');
         },
 
@@ -1003,4 +1002,4 @@ $(document).ready(function() {
     // Inicializar el sistema
     CurriculaSystem.init();
 });
-</script>f
+</script>

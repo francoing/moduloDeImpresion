@@ -47,6 +47,7 @@
 		
 		<!-- Modales del sistema de currícula -->
 		<?php include 'plantilla/curricula/informe_modal.php'; ?>
+		<?php include 'plantilla/curricula/informe_modal_preceptor.php'; ?>
 		
 		<!-- Estilos específicos del sistema -->
 		<?php include 'plantilla/curricula/informe_styles.php'; ?>

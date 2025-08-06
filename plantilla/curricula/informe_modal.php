@@ -99,14 +99,6 @@ $(document).ready(function() {
 
         nombreMateria = CurriculaSystem.selectedMateria;
         
-        /*
-        if (CurriculaSystem.matxdivData) {
-            const materiaSeleccionada = CurriculaSystem.matxdivData.find(m => m.id === CurriculaSystem.selectedMateria);
-            if (materiaSeleccionada) {
-                nombreMateria = materiaSeleccionada.codigo || materiaSeleccionada.nombre || materiaSeleccionada.id;
-            }
-        }
-            */
 
         // Llenar los datos en el modal
         $('#modal-anio').text(CurriculaSystem.selectedAño);
